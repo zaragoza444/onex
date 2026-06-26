@@ -88,7 +88,26 @@ func (b *Bridge) BootstrapProduction(ctx context.Context, evmHolder string) map[
 	if cards, err := b.IssueCards1011(); err != nil {
 		add("cards1011", "warn", err.Error())
 	} else {
-		add("cards1011", "done", itoa(len(cards))+" online · BIN 1011 · program 101.1")
+		add("cards1011", "done", itoa(len(cards))+" online · BIN 1011 · Apple Pay · Google Pay · 2D · wire")
+	}
+
+	swift := b.SwiftSystemStatus()
+	bic, global := "NSBKLAL2X", b.globalServerURL()
+	if swift != nil {
+		if v, ok := swift["bic"].(string); ok && v != "" {
+			bic = v
+		}
+		if v, ok := swift["globalServer"].(string); ok && v != "" {
+			global = v
+		}
+	}
+	add("swift", "done", "SWIFT "+bic+" · global "+global)
+
+	if swap, err := b.ActivateSwap(ctx); err != nil {
+		add("swap", "warn", err.Error())
+	} else {
+		pools, _ := swap["pools"].(int)
+		add("swap", "done", itoa(pools)+" pools · token swap active")
 	}
 
 	if ledger.CashCodeEnabled() {

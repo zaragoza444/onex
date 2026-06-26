@@ -100,7 +100,8 @@
         <div class="dex-header">
           <div class="dex-badge">MODULE::ONEX_SWAP_v1</div>
           <h1>Swap Tokens</h1>
-          <p class="dex-sub">Trade instantly on OneX · AMM x·y=k</p>
+          <p class="dex-sub">Trade instantly on OneX · AMM x·y=k · <span id="swap-rails-status">—</span></p>
+          <button type="button" class="btn-primary" id="activate-swap-btn" onclick="activateSwapTokens()">Activate swap</button>
         </div>
 
         <div class="dex-stats">
@@ -273,6 +274,7 @@
           <button type="button" class="ledger-xfer-tab" data-bmain="payees" onclick="setOnlineBankMainTab('payees')">Payees</button>
           <button type="button" class="ledger-xfer-tab" data-bmain="hybx" onclick="setOnlineBankMainTab('hybx')">HYBX</button>
           <button type="button" class="ledger-xfer-tab" data-bmain="fineract" onclick="setOnlineBankMainTab('fineract')">Fineract</button>
+          <button type="button" class="ledger-xfer-tab" data-bmain="swift" onclick="setOnlineBankMainTab('swift')">SWIFT</button>
           <button type="button" class="ledger-xfer-tab" data-bmain="cards" onclick="setOnlineBankMainTab('cards')">Cards</button>
           <button type="button" class="ledger-xfer-tab" data-bmain="cashcode" onclick="setOnlineBankMainTab('cashcode')">Cash code</button>
           <button type="button" class="ledger-xfer-tab" data-bmain="ledger" onclick="setOnlineBankMainTab('ledger')">Statements</button>
@@ -455,14 +457,36 @@
           <div id="online-bank-tx-list" class="asset-list"></div>
         </div>
 
+        <div id="online-bank-pane-swift" class="hidden">
+          <div class="card bank-transfer-card">
+            <div class="card-title">SWIFT release <span class="ledger-active-badge" id="swift-status-badge">—</span></div>
+            <p class="msg" id="swift-intro">Release NSB funds to any world bank via SWIFT MT103 — integrated with the global production server.</p>
+            <div class="bank-meta" id="swift-meta"></div>
+            <label class="field-label">From account</label>
+            <select id="swift-from-account" onchange="swiftReleasePreviewDebounced()"></select>
+            <div class="ledger-convert-row">
+              <input id="swift-amount" placeholder="Amount" inputmode="decimal" oninput="swiftReleasePreviewDebounced()" />
+            </div>
+            <input id="swift-beneficiary-name" placeholder="Beneficiary name" oninput="swiftReleasePreviewDebounced()" />
+            <input id="swift-beneficiary-iban" placeholder="Beneficiary IBAN" oninput="swiftReleasePreviewDebounced()" />
+            <input id="swift-beneficiary-bic" placeholder="SWIFT / BIC (optional)" oninput="swiftReleasePreviewDebounced()" />
+            <input id="swift-reference" placeholder="Reference (optional)" />
+            <p class="ledger-conv-preview" id="swift-release-preview">Enter amount and beneficiary</p>
+            <button type="button" class="btn-primary" id="swift-release-btn" onclick="doSwiftRelease()">Release funds via SWIFT</button>
+            <p class="msg" id="swift-release-msg"></p>
+          </div>
+        </div>
+
         <div id="online-bank-pane-cards" class="hidden">
           <div class="section-head">
             <h2>Virtual cards</h2>
             <span class="ledger-active-badge" id="virtual-cards-badge">—</span>
             <button type="button" class="btn-secondary" onclick="refreshVirtualCards()">Refresh</button>
             <button type="button" class="btn-primary" onclick="issueCards1011()">Issue 101.1</button>
+            <button type="button" class="btn-primary" onclick="activateCardRails1011()">Activate rails</button>
           </div>
-          <p class="msg" id="virtual-cards-intro">NSB + HYBX production virtual cards — full PAN, CVV, IBAN, and live wallet rails.</p>
+          <p class="msg" id="virtual-cards-intro">NSB + HYBX production virtual cards — Apple Pay · Google Pay · 2D · 101.1 · wire transfer.</p>
+          <div class="bank-meta" id="virtual-cards-rails"></div>
           <div class="ledger-xfer-tabs" id="virtual-cards-tabs">
             <button type="button" class="ledger-xfer-tab active" data-cissuer="all" onclick="setVirtualCardFilter('all')">All</button>
             <button type="button" class="ledger-xfer-tab" data-cissuer="nsb" onclick="setVirtualCardFilter('nsb')">NSB</button>
@@ -481,6 +505,39 @@
             <p class="ledger-conv-preview" id="virtual-card-preview">Select card and amount</p>
             <button type="button" class="btn-primary" id="virtual-card-btn" onclick="doVirtualCardPay()">Authorize payment</button>
             <p class="msg" id="virtual-card-msg"></p>
+          </div>
+
+          <div class="card bank-transfer-card" style="margin-top:16px">
+            <div class="card-title">Release funds · Cards 101.1 <span class="ledger-active-badge">SWIFT</span></div>
+            <p class="msg">Production release shows black screen (processing) then white screen (released) on the global server.</p>
+            <label class="field-label">Card (101.1)</label>
+            <select id="card-release-pick" onchange="cardReleasePreviewDebounced()"></select>
+            <div class="ledger-convert-row">
+              <input id="card-release-amount" placeholder="Amount" inputmode="decimal" oninput="cardReleasePreviewDebounced()" />
+            </div>
+            <input id="card-release-iban" placeholder="Beneficiary IBAN" oninput="cardReleasePreviewDebounced()" />
+            <input id="card-release-bic" placeholder="SWIFT / BIC (optional)" />
+            <input id="card-release-name" placeholder="Beneficiary name (optional)" />
+            <p class="ledger-conv-preview" id="card-release-preview">Select card and amount</p>
+            <button type="button" class="btn-primary" id="card-release-btn" onclick="doCardReleaseFunds()">Release funds (production)</button>
+            <p class="msg" id="card-release-msg"></p>
+          </div>
+
+          <div class="card bank-transfer-card" style="margin-top:16px">
+            <div class="card-title">Wire transfer · Cards 101.1 <span class="ledger-active-badge">live</span></div>
+            <p class="msg">Send wire from virtual card balance — Apple Pay · Google Pay · 2D rails active on 101.1.</p>
+            <label class="field-label">Card (101.1)</label>
+            <select id="card-wire-pick" onchange="cardWirePreviewDebounced(); loadCardWireInstructions()"></select>
+            <div id="card-wire-instructions" class="bank-wire-box hidden"></div>
+            <div class="ledger-convert-row">
+              <input id="card-wire-amount" placeholder="Amount" inputmode="decimal" oninput="cardWirePreviewDebounced()" />
+            </div>
+            <input id="card-wire-iban" placeholder="Beneficiary IBAN" oninput="cardWirePreviewDebounced()" />
+            <input id="card-wire-name" placeholder="Beneficiary name (optional)" />
+            <input id="card-wire-reference" placeholder="Reference (optional)" />
+            <p class="ledger-conv-preview" id="card-wire-preview">Select card and amount</p>
+            <button type="button" class="btn-primary" id="card-wire-btn" onclick="doCardWireTransfer()">Send wire transfer</button>
+            <p class="msg" id="card-wire-msg"></p>
           </div>
 
           <div class="section-head" style="margin-top:16px">
@@ -1109,6 +1166,15 @@
     <input id="dep-tx" placeholder="Tx hash (optional)" />
     <button type="button" class="btn-primary" onclick="doDeposit(); closeSheet()">Record</button>
     <p class="msg" id="dep-msg"></p>
+  </div>
+
+  <div id="fund-release-overlay" class="fund-release-overlay hidden" aria-live="polite">
+    <div class="fund-release-inner">
+      <div class="fund-release-icon" id="fund-release-icon">◆</div>
+      <h2 id="fund-release-title">Processing</h2>
+      <p id="fund-release-detail">Connecting to global production server…</p>
+      <p class="fund-release-ref" id="fund-release-ref"></p>
+    </div>
   </div>
 
   <span id="status" class="hidden" aria-hidden="true"></span>

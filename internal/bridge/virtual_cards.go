@@ -51,9 +51,11 @@ type VirtualCard struct {
 	Production  bool           `json:"production"`
 	FundClass   string         `json:"fundClass,omitempty"`
 	Providers   []CardProvider `json:"providers,omitempty"`
-	ApplePay    bool           `json:"applePay"`
-	GooglePay   bool           `json:"googlePay"`
-	ThreeDS     bool           `json:"threeDSecure"`
+	ApplePay      bool           `json:"applePay"`
+	GooglePay     bool           `json:"googlePay"`
+	TwoD          bool           `json:"twoD"`
+	ThreeDS       bool           `json:"threeDSecure"`
+	WireTransfer  bool           `json:"wireTransfer"`
 	Program     string         `json:"program,omitempty"`
 	Bin         string         `json:"bin,omitempty"`
 	PIN         string         `json:"pin,omitempty"`
@@ -485,7 +487,8 @@ func (b *Bridge) finalizeCard(c *VirtualCard) {
 		c.PIN = ""
 		c.Active = c.Status == cardStatusActive
 		c.Production = false
-		c.Providers = cardProviders(false)
+		b.activateCardRails(c)
+		c.Providers = cardProviders(*c)
 		return
 	}
 	c.Mode = "production"
@@ -494,10 +497,27 @@ func (b *Bridge) finalizeCard(c *VirtualCard) {
 	c.Production = true
 	c.PanFull = full
 	c.PanMasked = full
+	b.activateCardRails(c)
+	c.Providers = cardProviders(*c)
+}
+
+func (b *Bridge) activateCardRails(c *VirtualCard) {
+	if c == nil || !c.Active {
+		return
+	}
+	program := strings.TrimSpace(c.Program)
+	if program == "" {
+		program = cardProgram1011
+	}
+	if program != cardProgram1011 {
+		return
+	}
 	c.ApplePay = true
 	c.GooglePay = true
+	c.TwoD = true
 	c.ThreeDS = true
-	c.Providers = cardProviders(true)
+	c.WireTransfer = true
+	c.Online = true
 }
 
 func (b *Bridge) activateAllVirtualCards(st *virtualCardFile) bool {
@@ -530,19 +550,27 @@ func (b *Bridge) activateAllVirtualCards(st *virtualCardFile) bool {
 	return changed
 }
 
-func cardProviders(production bool) []CardProvider {
-	status, note := "pending", "Enable production mode"
-	if production {
-		status, note = "active", "Production · live"
+func cardProviders(c VirtualCard) []CardProvider {
+	status, note := "pending", "Issue Cards 101.1 to activate"
+	if c.Active && c.Program == cardProgram1011 {
+		status, note = "active", "Cards 101.1 · BIN " + cardBIN1011 + " · live"
+	}
+	railStatus := func(on bool) string {
+		if on && status == "active" {
+			return "active"
+		}
+		return status
 	}
 	return []CardProvider{
 		{Name: "Cards " + cardProgram1011, Status: status, Notes: "BIN " + cardBIN1011 + " · online · " + note},
 		{Name: "Visa", Status: status, SubmitURL: "https://www.visa.com", Notes: note},
 		{Name: "Mastercard", Status: status, SubmitURL: "https://www.mastercard.com", Notes: note},
 		{Name: "HYBX", Status: status, SubmitURL: "https://api.hybrix.io", Notes: "HYBX multi-ledger · " + note},
-		{Name: "Apple Pay", Status: status, Notes: note},
-		{Name: "Google Pay", Status: status, Notes: note},
-		{Name: "3D Secure", Status: status, Notes: note},
+		{Name: "Apple Pay", Status: railStatus(c.ApplePay), Notes: note},
+		{Name: "Google Pay", Status: railStatus(c.GooglePay), Notes: note},
+		{Name: "2D Secure", Status: railStatus(c.TwoD), Notes: "Card-not-present · CVV · " + note},
+		{Name: "3D Secure", Status: railStatus(c.ThreeDS), Notes: note},
+		{Name: "Wire Transfer", Status: railStatus(c.WireTransfer), Notes: note},
 		{Name: "NSB Card Network", Status: status, Notes: note},
 	}
 }
@@ -550,6 +578,10 @@ func cardProviders(production bool) []CardProvider {
 func (b *Bridge) VirtualCardsStatus() map[string]interface{} {
 	st, _ := b.cards().load()
 	active, prod, hybx, prog1011 := 0, 0, 0, 0
+	rails := map[string]bool{
+		"applePay": false, "googlePay": false, "twoD": false,
+		"threeDSecure": false, "wireTransfer": false,
+	}
 	for _, c := range st.Cards {
 		cc := c
 		b.finalizeCard(&cc)
@@ -564,12 +596,32 @@ func (b *Bridge) VirtualCardsStatus() map[string]interface{} {
 		}
 		if cc.Program == cardProgram1011 {
 			prog1011++
+			if cc.ApplePay {
+				rails["applePay"] = true
+			}
+			if cc.GooglePay {
+				rails["googlePay"] = true
+			}
+			if cc.TwoD {
+				rails["twoD"] = true
+			}
+			if cc.ThreeDS {
+				rails["threeDSecure"] = true
+			}
+			if cc.WireTransfer {
+				rails["wireTransfer"] = true
+			}
 		}
 	}
 	hx := ledger.NewHybrixClient().Status()
 	chains := []string{}
 	if sample, ok := hx["sampleAssets"].([]string); ok {
 		chains = sample
+	}
+	sampleCard := VirtualCard{
+		Active: active > 0, Program: cardProgram1011,
+		ApplePay: rails["applePay"], GooglePay: rails["googlePay"], TwoD: rails["twoD"],
+		ThreeDS: rails["threeDSecure"], WireTransfer: rails["wireTransfer"],
 	}
 	return map[string]interface{}{
 		"issuer": "NSB + HYBX · Cards " + cardProgram1011 + " Online", "enabled": true,
@@ -579,14 +631,20 @@ func (b *Bridge) VirtualCardsStatus() map[string]interface{} {
 		"hybxCards": hybx, "nsbCards": len(st.Cards) - hybx, "hybx": hx,
 		"middleware": ledger.HybxMiddlewareStatus(),
 		"multiChainAssets": chains,
-		"transactions": len(st.Transactions), "providers": cardProviders(b.isProduction()),
+		"transactions": len(st.Transactions),
+		"rails": rails,
+		"providers": cardProviders(sampleCard),
 		"api": map[string]string{
-			"list":       "/bridge/cards",
-			"activate":   "/bridge/cards/activate",
-			"program1011": "/bridge/cards/101.1/issue",
-			"hybxList":   "/bridge/cards/hybx",
-			"hybxIssue": "/bridge/bank/hybx/cards/issue",
-			"authorize": "/bridge/cards/authorize",
+			"list":          "/bridge/cards",
+			"activate":        "/bridge/cards/activate",
+			"activateRails":   "/bridge/cards/101.1/activate-rails",
+			"program1011":     "/bridge/cards/101.1/issue",
+			"release1011":     "/bridge/cards/101.1/release",
+			"wire1011":        "/bridge/cards/101.1/wire",
+			"wireInstructions": "/bridge/cards/wire",
+			"hybxList":        "/bridge/cards/hybx",
+			"hybxIssue":       "/bridge/bank/hybx/cards/issue",
+			"authorize":       "/bridge/cards/authorize",
 		},
 	}
 }

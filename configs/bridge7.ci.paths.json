@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "projectRoot": ".",
+  "localLedger2026": "configs/local-ledger-2026.example.json",
+  "ledgerPro": "configs/ledger-pro.example.json",
+  "cryptoLedger": "configs/crypto-ledger.example.json"
+}

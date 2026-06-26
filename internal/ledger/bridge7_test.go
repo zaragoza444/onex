@@ -6,6 +6,24 @@ import (
 	"testing"
 )
 
+func bridge7TestRoot(t *testing.T) string {
+	t.Helper()
+	root, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return root
+}
+
+func bridge7CIPathsFile(t *testing.T) string {
+	t.Helper()
+	p := filepath.Join(bridge7TestRoot(t), "configs", "bridge7.ci.paths.json")
+	if _, err := os.Stat(p); err != nil {
+		t.Skip("bridge7 CI paths file missing:", p)
+	}
+	return p
+}
+
 func TestParseBridge7Ledgers(t *testing.T) {
 	root := filepath.Join("..", "..", "configs")
 	local := filepath.Join(root, "local-ledger-2026.example.json")
@@ -38,10 +56,14 @@ func TestParseBridge7Ledgers(t *testing.T) {
 }
 
 func TestLoadBridge7Entries(t *testing.T) {
+	root := bridge7TestRoot(t)
+	pathsFile := bridge7CIPathsFile(t)
 	os.Setenv("ONEX_BRIDGE7_ENABLED", "1")
-	root, _ := filepath.Abs(filepath.Join("..", ".."))
 	os.Setenv("ONEX_PROJECT_ROOT", root)
-	os.Setenv("ONEX_BRIDGE7_PATHS_FILE", filepath.Join(root, "configs", "bridge7.paths.json"))
+	os.Setenv("ONEX_BRIDGE7_PATHS_FILE", pathsFile)
+	os.Unsetenv("ONEX_LOCAL_LEDGER_2026_FILE")
+	os.Unsetenv("ONEX_LEDGER_PRO_FILE")
+	os.Unsetenv("ONEX_CRYPTO_LEDGER_FILE")
 	t.Cleanup(func() {
 		os.Unsetenv("ONEX_BRIDGE7_ENABLED")
 		os.Unsetenv("ONEX_PROJECT_ROOT")
@@ -60,11 +82,7 @@ func TestLoadBridge7Entries(t *testing.T) {
 }
 
 func TestLoadBridge7ConfigFromPathsFile(t *testing.T) {
-	root, _ := filepath.Abs(filepath.Join("..", ".."))
-	pathsFile := filepath.Join(root, "configs", "bridge7.paths.json")
-	if _, err := os.Stat(pathsFile); err != nil {
-		t.Skip("bridge7.paths.json missing")
-	}
+	pathsFile := bridge7CIPathsFile(t)
 	os.Setenv("ONEX_BRIDGE7_PATHS_FILE", pathsFile)
 	os.Unsetenv("ONEX_LOCAL_LEDGER_2026_FILE")
 	os.Unsetenv("ONEX_LEDGER_PRO_FILE")

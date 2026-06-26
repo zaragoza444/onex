@@ -47,6 +47,7 @@ func (b *Bridge) OnlineBankStatus() map[string]interface{} {
 	st["fineract"] = ledger.NewFineractClient().Status()
 	st["virtualCards"] = b.VirtualCardsStatus()
 	st["cashCode"] = b.CashCodeStatus()
+	st["swift"] = b.SwiftSystemStatus()
 	return st
 }
 

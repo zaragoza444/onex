@@ -92,6 +92,8 @@ func (b *Bridge) ProductionPlatformStatus(ctx context.Context, evmHolder string)
 			"portfolio":    "/bridge/portfolio",
 			"transfer":     "/bridge/ledger/transfer",
 			"onlineBank":   "/bridge/bank/status",
+			"swift":        "/bridge/bank/swift/status",
+			"swiftRelease": "/bridge/bank/swift/release",
 			"hybx":         "/bridge/bank/hybx/status",
 			"fineract":     "/bridge/bank/fineract/status",
 			"virtualCards": "/bridge/cards/status",

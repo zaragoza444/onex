@@ -31,6 +31,8 @@ func (s *Server) registerDeFiRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/bridge/tokens/create", s.handleTokenCreate)
 	mux.HandleFunc("/bridge/tokens/custom", s.handleTokensCustom)
 	mux.HandleFunc("/bridge/onex-swap/pools", s.handleOneXSwapPools)
+	mux.HandleFunc("/bridge/onex-swap/status", s.handleOneXSwapStatus)
+	mux.HandleFunc("/bridge/onex-swap/activate", s.handleOneXSwapActivate)
 	mux.HandleFunc("/bridge/onex-swap/quote", s.handleOneXSwapQuote)
 	mux.HandleFunc("/bridge/onex-swap/swap", s.handleOneXSwapExec)
 	mux.HandleFunc("/bridge/onex-swap/liquidity/add", s.handleOneXSwapAddLiq)
@@ -40,6 +42,7 @@ func (s *Server) registerDeFiRoutes(mux *http.ServeMux) {
 	registerLegacySwapRoutes(mux, s)
 	s.registerLedgerRoutes(mux)
 	s.registerBankRoutes(mux)
+	s.registerSwiftRoutes(mux)
 	s.registerCardRoutes(mux)
 	s.registerCashCodeRoutes(mux)
 	s.registerBridge7Routes(mux)
@@ -167,6 +170,27 @@ func (s *Server) handleTokenCreate(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleOneXSwapPools(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, s.b.OneXSwapPools())
+}
+
+func (s *Server) handleOneXSwapStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "GET only", http.StatusMethodNotAllowed)
+		return
+	}
+	writeJSON(w, s.b.OneXSwapStatus())
+}
+
+func (s *Server) handleOneXSwapActivate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
+		return
+	}
+	res, err := s.b.ActivateSwap(r.Context())
+	if err != nil {
+		writeJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, res)
 }
 
 func (s *Server) handleOneXSwapQuote(w http.ResponseWriter, r *http.Request) {

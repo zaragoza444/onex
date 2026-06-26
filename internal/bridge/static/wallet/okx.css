@@ -1465,3 +1465,47 @@ html.onex-mobile .quick-action-icon {
 .ledger-settle-step.pending { color: #ff9500; }
 .ledger-settle-step.failed { color: #ff4d4f; }
 .ledger-settle-step.skipped { opacity: 0.6; }
+
+.fund-release-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+.fund-release-overlay.hidden { display: none; }
+.fund-release-overlay.black {
+  background: #000;
+  color: #fff;
+}
+.fund-release-overlay.white {
+  background: #fff;
+  color: #000;
+}
+.fund-release-inner {
+  text-align: center;
+  padding: 32px 24px;
+  max-width: 360px;
+}
+.fund-release-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+.fund-release-inner h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+.fund-release-inner p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.85;
+}
+.fund-release-ref {
+  margin-top: 12px !important;
+  font-family: ui-monospace, monospace;
+  font-size: 12px !important;
+}

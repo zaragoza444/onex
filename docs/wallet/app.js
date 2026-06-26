@@ -1276,15 +1276,50 @@ function updateSwapCTA() {
 
 async function updateDexStatus() {
   try {
-    const st = await api('/bridge/status');
+    const [st, swap] = await Promise.all([
+      api('/bridge/status'),
+      api('/bridge/onex-swap/status'),
+    ]);
     const apiEl = document.getElementById('dex-st-api');
     const nodeEl = document.getElementById('dex-st-node');
-    if (apiEl) { apiEl.className = 'ok'; }
+    const swapEl = document.getElementById('dex-st-swap');
+    if (apiEl) apiEl.className = 'ok';
     if (nodeEl) nodeEl.className = st.nodeOk ? 'ok' : 'off';
+    if (swapEl) swapEl.className = swap.active ? 'ok' : 'off';
+    const rails = document.getElementById('swap-rails-status');
+    if (rails) {
+      rails.textContent = swap.active
+        ? `${swap.pools || 0} pools · swap active`
+        : 'swap inactive — click Activate swap';
+    }
   } catch (_) {
     document.getElementById('dex-st-api')?.classList.add('off');
     document.getElementById('dex-st-node')?.classList.add('off');
+    document.getElementById('dex-st-swap')?.classList.add('off');
   }
+}
+
+async function activateSwapTokens() {
+  const btn = document.getElementById('activate-swap-btn');
+  const msg = document.getElementById('swap-msg');
+  if (btn) { btn.disabled = true; btn.textContent = 'Activating…'; }
+  if (!portfolio?.address) {
+    await api('/bridge/wallet/create', { method: 'POST' });
+    await refreshAll();
+  }
+  await connectGlobalProductionServer();
+  const j = await api('/bridge/onex-swap/activate', { method: 'POST' });
+  if (btn) { btn.disabled = false; btn.textContent = 'Activate swap'; }
+  if (j.error) {
+    if (msg) msg.textContent = j.error;
+    return;
+  }
+  if (msg) {
+    msg.textContent = `✓ Swap active · ${j.pools || 0} pools · ${j.seededBalances || 0} token balances seeded`;
+  }
+  await loadAmmPools();
+  await updateDexStatus();
+  await refreshAll();
 }
 
 function renderDexPoolCards(pools, targetId) {
@@ -2739,12 +2774,13 @@ function setOnlineBankMainTab(tab) {
   document.querySelectorAll('#online-bank-main-tabs .ledger-xfer-tab').forEach(b => {
     b.classList.toggle('active', b.dataset.bmain === tab);
   });
-  const panes = ['overview', 'send', 'deposit', 'activity', 'receive', 'payees', 'hybx', 'fineract', 'cards', 'cashcode', 'ledger'];
+  const panes = ['overview', 'send', 'deposit', 'activity', 'receive', 'payees', 'hybx', 'fineract', 'swift', 'cards', 'cashcode', 'ledger'];
   panes.forEach(p => {
     document.getElementById('online-bank-pane-' + p)?.classList.toggle('hidden', tab !== p);
   });
   if (tab === 'ledger') loadOnlineBankLedger();
   if (tab === 'cards') refreshVirtualCards();
+  if (tab === 'swift') loadSwiftSystem();
   if (tab === 'cashcode') refreshCashCodes();
   if (tab === 'activity') loadOnlineBankActivity();
   if (tab === 'receive') loadOnlineBankWire();
@@ -3248,8 +3284,13 @@ function renderVirtualCards(cards, status, gridId) {
   if (badge) badge.textContent = prod ? `${activeCount} active · Production` : (status?.mode || '—');
   if (intro) {
     intro.textContent = prod
-      ? `Cards 101.1 online · BIN 1011 · 4-digit PIN · ${activeCount}/${cards?.length || 0} active (${nsb} NSB · ${hybx} HYBX)`
+      ? `Cards 101.1 online · Apple Pay · Google Pay · 2D · wire · ${activeCount}/${cards?.length || 0} active (${nsb} NSB · ${hybx} HYBX)`
       : `NSB + HYBX virtual debit cards · ${activeCount} active (${nsb} NSB · ${hybx} HYBX)`;
+  }
+  const railsEl = document.getElementById('virtual-cards-rails');
+  if (railsEl && status?.rails) {
+    const r = status.rails;
+    railsEl.textContent = `Rails: ${r.applePay ? 'Apple Pay ✓' : 'Apple Pay —'} · ${r.googlePay ? 'Google Pay ✓' : 'Google Pay —'} · ${r.twoD ? '2D ✓' : '2D —'} · ${r.wireTransfer ? 'Wire ✓' : 'Wire —'}`;
   }
   if (!grid) return;
   if (!cards?.length) {
@@ -3285,7 +3326,10 @@ function renderVirtualCards(cards, status, gridId) {
       <div class="virtual-card-wallets">
         ${c.applePay ? '<span class="deploy-badge green">Apple Pay</span>' : ''}
         ${c.googlePay ? '<span class="deploy-badge green">Google Pay</span>' : ''}
+        ${c.twoD ? '<span class="deploy-badge green">2D</span>' : ''}
         ${c.threeDSecure ? '<span class="deploy-badge green">3DS</span>' : ''}
+        ${c.wireTransfer ? '<span class="deploy-badge green">Wire</span>' : ''}
+        ${c.program === '101.1' || c.bin === '1011' ? '<span class="deploy-badge green">101.1</span>' : ''}
         ${renderCardProviders(c.providers)}
       </div>
     </div>`).join('');
@@ -3296,6 +3340,29 @@ function fillVirtualCardSelect(cards) {
   if (!sel) return;
   sel.innerHTML = ['<option value="">Select card…</option>'].concat(
     (cards || []).map(c =>
+      `<option value="${escapeHtml(c.id)}" data-avail="${escapeHtml(c.available)}" data-cur="${escapeHtml(c.currency)}">${escapeHtml(c.network || c.brand)} ${escapeHtml(c.production ? (c.panFull || c.panMasked || '') : '•••• ' + (c.last4 || ''))} — ${escapeHtml(c.available)} ${escapeHtml(c.currency)}</option>`
+    )
+  ).join('');
+}
+
+function fillCardReleaseSelect(cards) {
+  const sel = document.getElementById('card-release-pick');
+  if (!sel) return;
+  const eligible = (cards || []).filter(c => c.program === '101.1' || c.bin === '1011');
+  sel.innerHTML = ['<option value="">Select Cards 101.1…</option>'].concat(
+    eligible.map(c =>
+      `<option value="${escapeHtml(c.id)}" data-avail="${escapeHtml(c.available)}" data-cur="${escapeHtml(c.currency)}">${escapeHtml(c.network || c.brand)} ${escapeHtml(c.production ? (c.panFull || c.panMasked || '') : '•••• ' + (c.last4 || ''))} — ${escapeHtml(c.available)} ${escapeHtml(c.currency)}</option>`
+    )
+  ).join('');
+  fillCardWireSelect(eligible);
+}
+
+function fillCardWireSelect(cards) {
+  const sel = document.getElementById('card-wire-pick');
+  if (!sel) return;
+  const eligible = (cards || []).filter(c => c.program === '101.1' || c.bin === '1011');
+  sel.innerHTML = ['<option value="">Select Cards 101.1…</option>'].concat(
+    eligible.map(c =>
       `<option value="${escapeHtml(c.id)}" data-avail="${escapeHtml(c.available)}" data-cur="${escapeHtml(c.currency)}">${escapeHtml(c.network || c.brand)} ${escapeHtml(c.production ? (c.panFull || c.panMasked || '') : '•••• ' + (c.last4 || ''))} — ${escapeHtml(c.available)} ${escapeHtml(c.currency)}</option>`
     )
   ).join('');
@@ -3319,10 +3386,95 @@ function renderVirtualCardTransactions(txs) {
 }
 
 async function issueCards1011() {
-  const msg = document.getElementById('virtual-card-msg');
+  const msg = document.getElementById('virtual-cards-intro');
   const j = await api('/bridge/cards/101.1/issue', { method: 'POST' });
   if (msg) msg.textContent = j.error ? j.error : `✓ Cards 101.1 · ${j.count || 0} online · BIN ${j.bin || '1011'}`;
   await refreshVirtualCards();
+}
+
+async function activateCardRails1011() {
+  const msg = document.getElementById('virtual-cards-intro');
+  const j = await api('/bridge/cards/101.1/activate-rails', { method: 'POST' });
+  if (msg) {
+    msg.textContent = j.error ? j.error
+      : `✓ Rails active · Apple Pay · Google Pay · 2D · 101.1 · wire · ${j.count || 0} cards`;
+  }
+  await refreshVirtualCards();
+}
+
+let cardWireTimer = null;
+function cardWirePreviewDebounced() {
+  clearTimeout(cardWireTimer);
+  cardWireTimer = setTimeout(cardWirePreview, 350);
+}
+
+async function loadCardWireInstructions() {
+  const box = document.getElementById('card-wire-instructions');
+  const cardId = document.getElementById('card-wire-pick')?.value;
+  if (!box || !cardId) {
+    if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
+    return;
+  }
+  const w = await api('/bridge/cards/wire?cardId=' + encodeURIComponent(cardId));
+  if (w.error) {
+    box.classList.add('hidden');
+    return;
+  }
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="bank-wire-row"><span>Receive via</span><strong>${escapeHtml(w.accountName || '—')}</strong></div>
+    <div class="bank-wire-row"><span>IBAN</span><code>${escapeHtml(w.iban || '—')}</code></div>
+    <div class="bank-wire-row"><span>SWIFT</span><code>${escapeHtml(w.swift || '—')}</code></div>
+    <div class="bank-wire-row"><span>Reference</span><code>${escapeHtml(w.reference || '—')}</code></div>`;
+}
+
+async function cardWirePreview() {
+  const preview = document.getElementById('card-wire-preview');
+  const cardId = document.getElementById('card-wire-pick')?.value;
+  const amount = document.getElementById('card-wire-amount')?.value;
+  const iban = document.getElementById('card-wire-iban')?.value?.trim();
+  if (!cardId || !amount || !iban) {
+    if (preview) preview.textContent = 'Select card, amount, and IBAN';
+    return;
+  }
+  const j = await api('/bridge/cards/101.1/wire', {
+    method: 'POST',
+    body: JSON.stringify({
+      cardId, amount, beneficiaryIban: iban, preview: true,
+      beneficiaryName: document.getElementById('card-wire-name')?.value?.trim(),
+    }),
+  });
+  if (preview) preview.textContent = j.error ? j.error : `Preview wire ${amount} · Cards 101.1`;
+}
+
+async function doCardWireTransfer() {
+  const msg = document.getElementById('card-wire-msg');
+  const btn = document.getElementById('card-wire-btn');
+  const cardId = document.getElementById('card-wire-pick')?.value;
+  const amount = document.getElementById('card-wire-amount')?.value;
+  const iban = document.getElementById('card-wire-iban')?.value?.trim();
+  if (!cardId || !amount || !iban) {
+    if (msg) msg.textContent = 'Card, amount, and IBAN required';
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  await connectGlobalProductionServer();
+  const j = await api('/bridge/cards/101.1/wire', {
+    method: 'POST',
+    body: JSON.stringify({
+      cardId, amount, beneficiaryIban: iban, preview: false,
+      beneficiaryName: document.getElementById('card-wire-name')?.value?.trim(),
+      reference: document.getElementById('card-wire-reference')?.value?.trim(),
+    }),
+  });
+  if (btn) { btn.disabled = false; btn.textContent = 'Send wire transfer'; }
+  if (j.error) {
+    if (msg) msg.textContent = j.error;
+    return;
+  }
+  if (msg) msg.textContent = `✓ Wire ${j.status}: ${amount} · ${j.wireRef || ''}`;
+  await refreshVirtualCards();
+  await refreshOnlineBank();
 }
 
 async function refreshVirtualCards() {
@@ -3345,8 +3497,10 @@ async function refreshVirtualCards() {
     return;
   }
   virtualCards = list.cards || [];
-  renderVirtualCards(filterVirtualCards(virtualCards), status);
-  fillVirtualCardSelect(filterVirtualCards(virtualCards));
+  const filtered = filterVirtualCards(virtualCards);
+  renderVirtualCards(filtered, status);
+  fillVirtualCardSelect(filtered);
+  fillCardReleaseSelect(filtered);
   renderVirtualCardTransactions(txs.transactions || []);
 }
 
@@ -3372,6 +3526,179 @@ async function virtualCardPreview() {
   if (!preview) return;
   if (j.error) { preview.textContent = j.error; return; }
   preview.textContent = `Preview: ${j.amount} ${j.currency} at ${j.merchant} · available ${j.available}`;
+}
+
+let swiftReleaseTimer = null;
+let cardReleaseTimer = null;
+
+function showFundReleaseScreen(screen, title, detail, ref) {
+  const overlay = document.getElementById('fund-release-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('hidden', 'black', 'white');
+  overlay.classList.add(screen === 'white' ? 'white' : 'black');
+  const t = document.getElementById('fund-release-title');
+  const d = document.getElementById('fund-release-detail');
+  const r = document.getElementById('fund-release-ref');
+  const icon = document.getElementById('fund-release-icon');
+  if (t) t.textContent = title || (screen === 'white' ? 'Funds released' : 'Processing');
+  if (d) d.textContent = detail || '';
+  if (r) r.textContent = ref ? `Ref: ${ref}` : '';
+  if (icon) icon.textContent = screen === 'white' ? '✓' : '◆';
+}
+
+function hideFundReleaseScreen(delayMs = 0) {
+  const run = () => {
+    const overlay = document.getElementById('fund-release-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  };
+  if (delayMs > 0) setTimeout(run, delayMs);
+  else run();
+}
+
+async function connectGlobalProductionServer() {
+  const evmQ = getEvmHolder() ? `?evm=${encodeURIComponent(getEvmHolder())}` : '';
+  return api('/bridge/production/connect' + evmQ, { method: 'POST' });
+}
+
+async function loadSwiftSystem() {
+  const badge = document.getElementById('swift-status-badge');
+  const meta = document.getElementById('swift-meta');
+  const intro = document.getElementById('swift-intro');
+  const sel = document.getElementById('swift-from-account');
+  const j = await api('/bridge/bank/swift/status');
+  if (badge) badge.textContent = j.production ? 'production' : 'live';
+  if (meta) {
+    meta.textContent = `BIC ${j.bic || '—'} · Global ${j.globalServer || '—'}`;
+  }
+  if (intro && j.globalServer) {
+    intro.textContent = `Release NSB funds via SWIFT — global server ${j.globalServer}`;
+  }
+  if (sel && onlineBankAccounts?.length) {
+    sel.innerHTML = onlineBankAccounts.map(a =>
+      `<option value="${escapeHtml(a.id)}">${escapeHtml(a.name)} · ${escapeHtml(a.balance)} ${escapeHtml(a.currency)}</option>`
+    ).join('');
+  }
+}
+
+function swiftReleasePreviewDebounced() {
+  clearTimeout(swiftReleaseTimer);
+  swiftReleaseTimer = setTimeout(swiftReleasePreview, 350);
+}
+
+async function swiftReleasePreview() {
+  const preview = document.getElementById('swift-release-preview');
+  const fromAccount = document.getElementById('swift-from-account')?.value;
+  const amount = document.getElementById('swift-amount')?.value;
+  const iban = document.getElementById('swift-beneficiary-iban')?.value?.trim();
+  if (!fromAccount || !amount || !iban) {
+    if (preview) preview.textContent = 'Enter account, amount, and IBAN';
+    return;
+  }
+  const body = {
+    fromAccount, amount, beneficiaryIban: iban, preview: true,
+    beneficiaryBic: document.getElementById('swift-beneficiary-bic')?.value?.trim(),
+    beneficiaryName: document.getElementById('swift-beneficiary-name')?.value?.trim(),
+  };
+  const j = await api('/bridge/bank/swift/release', { method: 'POST', body: JSON.stringify(body) });
+  if (preview) preview.textContent = j.error ? j.error : `Preview SWIFT ${amount} → ${iban}`;
+}
+
+async function doSwiftRelease() {
+  const msg = document.getElementById('swift-release-msg');
+  const btn = document.getElementById('swift-release-btn');
+  const fromAccount = document.getElementById('swift-from-account')?.value;
+  const amount = document.getElementById('swift-amount')?.value;
+  const iban = document.getElementById('swift-beneficiary-iban')?.value?.trim();
+  if (!fromAccount || !amount || !iban) {
+    if (msg) msg.textContent = 'Account, amount, and IBAN required';
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Releasing…'; }
+  showFundReleaseScreen('black', 'Processing', 'Black screen · SWIFT release on global server…');
+  await connectGlobalProductionServer();
+  const body = {
+    fromAccount, amount, beneficiaryIban: iban, preview: false,
+    beneficiaryBic: document.getElementById('swift-beneficiary-bic')?.value?.trim(),
+    beneficiaryName: document.getElementById('swift-beneficiary-name')?.value?.trim(),
+    reference: document.getElementById('swift-reference')?.value?.trim(),
+  };
+  const j = await api('/bridge/bank/swift/release', { method: 'POST', body: JSON.stringify(body) });
+  if (btn) { btn.disabled = false; btn.textContent = 'Release funds via SWIFT'; }
+  if (j.error) {
+    showFundReleaseScreen('black', 'Failed', j.error);
+    hideFundReleaseScreen(2500);
+    if (msg) msg.textContent = j.error;
+    return;
+  }
+  const screen = j.screen || (j.status === 'released' ? 'white' : 'black');
+  showFundReleaseScreen(screen, screen === 'white' ? 'Funds released' : 'Processing',
+    `SWIFT ${j.swiftRef || ''} · ${j.globalServer || ''}`, j.swiftRef);
+  hideFundReleaseScreen(screen === 'white' ? 2200 : 3500);
+  if (msg) msg.textContent = `✓ ${j.status}: ${amount} via SWIFT · ${j.swiftRef || ''}`;
+  await refreshOnlineBank();
+}
+
+function cardReleasePreviewDebounced() {
+  clearTimeout(cardReleaseTimer);
+  cardReleaseTimer = setTimeout(cardReleasePreview, 350);
+}
+
+async function cardReleasePreview() {
+  const preview = document.getElementById('card-release-preview');
+  const cardId = document.getElementById('card-release-pick')?.value;
+  const amount = document.getElementById('card-release-amount')?.value;
+  const iban = document.getElementById('card-release-iban')?.value?.trim();
+  if (!cardId || !amount || !iban) {
+    if (preview) preview.textContent = 'Select card, amount, and IBAN';
+    return;
+  }
+  const j = await api('/bridge/cards/101.1/release', {
+    method: 'POST',
+    body: JSON.stringify({
+      cardId, amount, beneficiaryIban: iban, preview: true,
+      beneficiaryBic: document.getElementById('card-release-bic')?.value?.trim(),
+      beneficiaryName: document.getElementById('card-release-name')?.value?.trim(),
+    }),
+  });
+  if (preview) preview.textContent = j.error ? j.error : `Preview release ${amount} · Cards 101.1`;
+}
+
+async function doCardReleaseFunds() {
+  const msg = document.getElementById('card-release-msg');
+  const btn = document.getElementById('card-release-btn');
+  const cardId = document.getElementById('card-release-pick')?.value;
+  const amount = document.getElementById('card-release-amount')?.value;
+  const iban = document.getElementById('card-release-iban')?.value?.trim();
+  if (!cardId || !amount || !iban) {
+    if (msg) msg.textContent = 'Card, amount, and IBAN required';
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Releasing…'; }
+  showFundReleaseScreen('black', 'Cards 101.1', 'Black screen · releasing funds on global production server…');
+  await connectGlobalProductionServer();
+  const j = await api('/bridge/cards/101.1/release', {
+    method: 'POST',
+    body: JSON.stringify({
+      cardId, amount, beneficiaryIban: iban, preview: false,
+      beneficiaryBic: document.getElementById('card-release-bic')?.value?.trim(),
+      beneficiaryName: document.getElementById('card-release-name')?.value?.trim(),
+    }),
+  });
+  if (btn) { btn.disabled = false; btn.textContent = 'Release funds (production)'; }
+  if (j.error) {
+    showFundReleaseScreen('black', 'Release failed', j.error);
+    hideFundReleaseScreen(2500);
+    if (msg) msg.textContent = j.error;
+    return;
+  }
+  const screen = j.screen || (j.status === 'released' ? 'white' : 'black');
+  showFundReleaseScreen(screen,
+    screen === 'white' ? 'Funds released · 101.1' : 'Processing · 101.1',
+    `BIN 1011 · ${j.globalServer || ''}`, j.swiftRef);
+  hideFundReleaseScreen(screen === 'white' ? 2500 : 4000);
+  if (msg) msg.textContent = `✓ ${j.status}: ${amount} released · ${j.swiftRef || ''}`;
+  await refreshVirtualCards();
+  await refreshOnlineBank();
 }
 
 async function doVirtualCardPay() {
