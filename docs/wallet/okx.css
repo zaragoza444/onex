@@ -1509,3 +1509,87 @@ html.onex-mobile .quick-action-icon {
   font-family: ui-monospace, monospace;
   font-size: 12px !important;
 }
+
+/* Mission Control dashboard */
+.dashboard-header { padding: 16px 16px 0; }
+.dashboard-header h1 { margin: 8px 0 4px; font-size: 24px; }
+.dashboard-overall {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--card-bg, #111);
+  border: 1px solid var(--border, #222);
+}
+.dashboard-status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6b7a8f;
+}
+.dashboard-status-dot.green { background: #00e5b0; box-shadow: 0 0 10px #00e5b066; }
+.dashboard-status-dot.amber { background: #ff9500; box-shadow: 0 0 10px #ff950066; }
+.dashboard-stats { margin: 0 16px 16px; }
+.dashboard-checks {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+.dashboard-check {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--card-bg, #111);
+  border: 1px solid var(--border, #222);
+}
+.dashboard-check.green { border-color: #00e5b033; }
+.dashboard-check.amber { border-color: #ff950033; }
+.dashboard-check.red { border-color: #ff3b3033; }
+.dashboard-check-icon { font-size: 16px; line-height: 1.4; }
+.dashboard-check p { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }
+.dashboard-modules {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+.dashboard-module {
+  text-align: left;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--card-bg, #111);
+  border: 1px solid var(--border, #222);
+  color: inherit;
+  cursor: pointer;
+}
+.dashboard-module.active { border-color: #00e5b044; }
+.dashboard-module p { margin: 6px 0 0; font-size: 11px; color: var(--text-muted); line-height: 1.35; }
+.dashboard-module-badge {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #ffffff10;
+  margin-bottom: 6px;
+}
+.dashboard-module.active .dashboard-module-badge { background: #00e5b022; color: #00e5b0; }
+.dashboard-bootstrap { padding: 0 16px 24px; }
+.dashboard-boot-step {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, #222);
+  font-size: 13px;
+}
+.dashboard-boot-step span { color: var(--text-muted); text-transform: capitalize; }
+.dashboard-boot-step.done strong { color: #00e5b0; }
+.dashboard-boot-step.warn strong { color: #ff9500; }
+.dashboard-boot-step.failed strong { color: #ff3b30; }
