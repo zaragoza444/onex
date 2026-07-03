@@ -376,8 +376,6 @@ scripts\test-bscscan-1b-usdt.ps1
 scripts\vps_pull_github.py
 scripts\vps_pull_github.sh
 scripts\vps-go-live.sh
-shiva-icon.ico
-shiva-icon.png
 website\assets\onex.svg
 website\contact.html
 website\css\style.css

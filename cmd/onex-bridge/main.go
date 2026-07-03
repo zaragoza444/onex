@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/onex-blockchain/onex/internal/bridge"
 	"github.com/onex-blockchain/onex/internal/bridge/chains"
@@ -71,14 +72,20 @@ func main() {
 
 	srv := bridge.NewServer(b)
 	if b.IsProduction() {
-		log.Printf("bridge: production bootstrap…")
-		if res := b.BootstrapProduction(context.Background(), ""); res != nil {
+		log.Printf("bridge: production bootstrap (background)…")
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+			defer cancel()
+			res := b.BootstrapProduction(ctx, "")
+			if res == nil {
+				return
+			}
 			if ok, _ := res["ok"].(bool); ok {
 				log.Printf("bridge: production bootstrap complete")
 			} else {
-				log.Printf("bridge: production bootstrap: %v", res["detail"])
+				log.Printf("bridge: production bootstrap partial: %v", res["steps"])
 			}
-		}
+		}()
 	}
 	log.Fatal(srv.Start(cfg.Listen))
 }

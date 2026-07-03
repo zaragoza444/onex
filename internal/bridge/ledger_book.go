@@ -130,8 +130,9 @@ func (b *Bridge) settleLedgerEVM(rec ledger.TransferRecord, dest *ledger.Externa
 	}
 
 	decimals, contract, native := b.evmSendMeta(dest.ChainID, asset)
+	rpcURL := chains.ResolveChainRPC(chainInfo.ID, chainInfo.RPC)
 	txHash, err := chains.SendEVMTransfer(context.Background(), chains.EVMSendInput{
-		RPCURL:        chainInfo.RPC,
+		RPCURL:        rpcURL,
 		ChainID:       chainInfo.NetworkID,
 		PrivateKeyHex: keyHex,
 		ToAddress:     dest.Address,

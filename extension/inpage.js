@@ -41,5 +41,4 @@
     },
   };
   window.onex = provider;
-  if (!window.shiva) window.shiva = provider;
 })();

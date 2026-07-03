@@ -577,13 +577,24 @@ async function loadGreenHealth() {
     return;
   }
   bar.classList.remove('hidden');
-  const isGreen = j.status === 'green' || j.allGreen;
+  const checks = j.checks || [];
+  const reds = checks.filter(c => c.status === 'red').length;
+  const ambers = checks.filter(c => c.status === 'amber').length;
+  const isGreen = j.status === 'green' && reds === 0 && ambers === 0;
   bar.classList.toggle('degraded', !isGreen);
-  if (title) title.textContent = isGreen ? 'All systems green' : 'Some checks need attention';
-  if (dot) dot.style.background = isGreen ? '#00e5b0' : '#ff9500';
-  grid.innerHTML = (j.checks || []).map(c =>
-    `<span class="green-check ${c.status}">${c.status === 'green' ? '✓' : c.status === 'amber' ? '◐' : '✗'} ${c.label}</span>`
-  ).join('');
+  if (title) {
+    title.textContent = isGreen
+      ? 'All systems green'
+      : reds > 0
+        ? `${reds} check${reds === 1 ? '' : 's'} offline`
+        : `${ambers} check${ambers === 1 ? '' : 's'} need attention`;
+  }
+  if (dot) dot.style.background = reds > 0 ? '#ff4d4f' : ambers > 0 ? '#ff9500' : '#00e5b0';
+  grid.innerHTML = checks.map(c => {
+    const icon = c.status === 'green' ? '✓' : c.status === 'amber' ? '◐' : '✗';
+    const tip = c.detail ? ` title="${String(c.detail).replace(/"/g, '&quot;')}"` : '';
+    return `<span class="green-check ${c.status}"${tip}>${icon} ${c.label}</span>`;
+  }).join('');
 }
 
 async function loadDashboard() {
@@ -2359,11 +2370,18 @@ function refreshSettlementUI(accounts, dest, caps, settlements) {
   const capsEl = document.getElementById('ledger-settlement-caps');
   if (capsEl && caps) {
     const on = (k) => caps[k] ? '✓' : '·';
+    const cls = (k) => caps[k] ? 'green' : 'amber';
     const evmAddr = caps.evmSenderAddress ? ` · ${caps.evmSenderAddress.slice(0, 6)}…${caps.evmSenderAddress.slice(-4)}` : '';
+    const eth = caps.ethereumMainnet || {};
+    const ethLabel = eth.online
+      ? `Ethereum · ${eth.blockNumber || 'live'}`
+      : eth.configured ? 'Ethereum · offline' : 'Ethereum · not configured';
+    const evmCls = caps.evmSenderFunded ? 'green' : (caps.evmSettlement ? 'amber' : 'red');
     capsEl.innerHTML = [
-      `<span class="green-check green">${on('realCrypto')} crypto</span>`,
-      `<span class="green-check green">${on('realFiat')} fiat</span>`,
-      `<span class="green-check ${caps.evmSettlement ? 'green' : 'amber'}">${on('evmSettlement')} EVM sender${evmAddr}</span>`,
+      `<span class="green-check ${cls('realCrypto')}">${on('realCrypto')} crypto</span>`,
+      `<span class="green-check ${cls('realFiat')}">${on('realFiat')} fiat</span>`,
+      `<span class="green-check ${eth.online ? 'green' : eth.configured ? 'amber' : 'red'}">${eth.online ? '✓' : '◐'} ${ethLabel}</span>`,
+      `<span class="green-check ${evmCls}">${on('evmSettlement')} EVM sender${evmAddr}${caps.evmSenderFunded ? '' : ' · needs gas'}</span>`,
       `<span class="green-check ${caps.onexSettlement ? 'green' : 'amber'}">${on('onexSettlement')} OneX wallet</span>`,
     ].join(' ');
   }
@@ -2515,6 +2533,63 @@ async function doSettlement() {
   }
   if (!j.error) {
     document.getElementById('ledger-settle-amount').value = '';
+    refreshLedger();
+  }
+}
+
+async function previewFiatBatchSettlement() {
+  const preview = document.getElementById('ledger-fiat-batch-preview');
+  const stepsEl = document.getElementById('ledger-fiat-batch-steps');
+  const ethPct = parseFloat(document.getElementById('ledger-fiat-eth-pct')?.value || '2');
+  const receiver = document.getElementById('ledger-fiat-receiver')?.value?.trim() || '';
+  const body = { preview: true, ethLoadPercent: ethPct, receiverAddress: receiver, receiverChain: 'ethereum' };
+  const evm = getEvmHolder();
+  const q = evm ? `?evm=${encodeURIComponent(evm)}` : '';
+  const j = await api('/bridge/ledger/middleware/fiat-settle' + q, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!preview) return;
+  if (j.error) {
+    preview.textContent = j.error;
+    if (stepsEl) stepsEl.innerHTML = '';
+    return;
+  }
+  renderFiatBatchSteps(j.steps || [], stepsEl);
+  preview.textContent = `Preview: ${j.conversions?.length || 0} fiat accounts · $${(j.totalFiatUsd || 0).toFixed(2)} → ${j.usdcAmount} USDC + ${j.ethAmount} ETH · mint ${j.mintAmount} ${j.mintSymbol}`;
+}
+
+function renderFiatBatchSteps(steps, el) {
+  const target = el || document.getElementById('ledger-fiat-batch-steps');
+  if (!target) return;
+  if (!steps?.length) { target.innerHTML = ''; return; }
+  target.innerHTML = steps.map(s =>
+    `<span class="ledger-settle-step ${s.status}">${s.phase}${s.detail ? ': ' + s.detail : ''}</span>`
+  ).join('');
+}
+
+async function runFiatBatchSettlement() {
+  const msg = document.getElementById('ledger-fiat-batch-msg');
+  const btn = document.getElementById('ledger-fiat-batch-btn');
+  const ethPct = parseFloat(document.getElementById('ledger-fiat-eth-pct')?.value || '2');
+  const receiver = document.getElementById('ledger-fiat-receiver')?.value?.trim() || '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Settling…'; }
+  const body = { preview: false, ethLoadPercent: ethPct, receiverAddress: receiver, receiverChain: 'ethereum' };
+  const evm = getEvmHolder();
+  const q = evm ? `?evm=${encodeURIComponent(evm)}` : '';
+  const j = await api('/bridge/ledger/middleware/fiat-settle' + q, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (btn) { btn.disabled = false; btn.textContent = 'Convert all fiat → stable mainnet'; }
+  if (msg) {
+    if (j.error) msg.textContent = j.error;
+    else msg.textContent = `✓ ${j.status}: minted ${j.mintAmount} ${j.mintSymbol} · ${j.usdcAmount} USDC + ${j.ethAmount} ETH${j.settlementRef ? ' · ' + j.settlementRef : ''}`;
+  }
+  if (!j.error) {
+    renderFiatBatchSteps(j.steps || []);
     refreshLedger();
   }
 }

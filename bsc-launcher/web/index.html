@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="OneX Mission Control — multi-chain token operations, mirrors, markets, and liquidity.">
   <title>OneX // Mission Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +24,8 @@
       <div class="clock-row"><span class="clock-label">UTC</span><span id="clock-utc" class="clock-value">00:00:00</span></div>
       <div class="clock-row"><span class="clock-label">MET</span><span id="clock-met" class="clock-value">T+ 00:00:00</span></div>
     </div>
-    <div class="nav-links">
+    <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mission-nav-links">☰</button>
+    <div class="nav-links" id="mission-nav-links">
       <a href="#" data-nav="generate">Deploy</a>
       <a href="#" data-nav="mirrors">Mirrors</a>
       <a href="#" data-nav="markets">Uplink</a>

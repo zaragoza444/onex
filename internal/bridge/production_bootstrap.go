@@ -3,11 +3,13 @@ package bridge
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
 
+	"github.com/onex-blockchain/onex/internal/bridge/chains"
 	"github.com/onex-blockchain/onex/internal/ledger"
 )
 
@@ -70,9 +72,11 @@ func (b *Bridge) BootstrapProduction(ctx context.Context, evmHolder string) map[
 	}
 
 	if ledger.LoadHybrixConfig().Enabled {
-		if err := b.SyncHybxMiddleware(ctx, evmHolder); err != nil {
-			add("hybx", "failed", err.Error())
-			ok = false
+		hybxCtx, cancel := context.WithTimeout(ctx, 25*time.Second)
+		err := b.SyncHybxMiddleware(hybxCtx, evmHolder)
+		cancel()
+		if err != nil {
+			add("hybx", "warn", err.Error())
 		} else {
 			cards, _ := b.IssueHybxVirtualCards()
 			add("hybx", "done", "middleware · "+itoa(len(cards))+" HYBX cards")
@@ -108,6 +112,18 @@ func (b *Bridge) BootstrapProduction(ctx context.Context, evmHolder string) map[
 	} else {
 		pools, _ := swap["pools"].(int)
 		add("swap", "done", itoa(pools)+" pools · token swap active")
+	}
+
+	if chains.LoadEthereumRPC() != "" && chains.LoadEthereumMasterKeySilent() {
+		if res, err := chains.FundEVMSenderIfNeeded(ctx); err != nil {
+			add("ethereum", "warn", err.Error())
+		} else if st, _ := res["status"].(string); st == "completed" {
+			add("ethereum", "done", "funded EVM sender · tx "+fmt.Sprint(res["txHash"]))
+		} else {
+			add("ethereum", "done", fmt.Sprint(res["reason"]))
+		}
+	} else if chains.LoadEthereumRPC() != "" {
+		add("ethereum", "warn", "set ONEX_ETHEREUM_MASTER_KEY to fund sender or sign transfers")
 	}
 
 	if ledger.CashCodeEnabled() {

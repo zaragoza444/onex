@@ -586,6 +586,20 @@ function showView(name) {
     checkPair();
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  closeMissionNav();
+}
+
+function setMissionNavOpen(open) {
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('mission-nav-links');
+  if (!toggle || !links) return;
+  links.classList.toggle('open', open);
+  toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  document.body.classList.toggle('nav-open', open);
+}
+
+function closeMissionNav() {
+  setMissionNavOpen(false);
 }
 
 function setWizardStep(step) {
@@ -1833,6 +1847,13 @@ function debounce(fn, ms) {
 }
 
 /* Event bindings */
+document.getElementById('nav-toggle')?.addEventListener('click', () => {
+  const links = document.getElementById('mission-nav-links');
+  setMissionNavOpen(!links?.classList.contains('open'));
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeMissionNav();
+});
 document.querySelectorAll('[data-nav]').forEach(el => {
   el.addEventListener('click', (e) => {
     e.preventDefault();

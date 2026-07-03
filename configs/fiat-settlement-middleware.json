@@ -1,0 +1,6 @@
+{
+  "chainId": "ethereum",
+  "stableSymbol": "ONEXUSD",
+  "ethLoadPercent": 2,
+  "mintStablecoin": true
+}

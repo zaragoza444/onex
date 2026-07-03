@@ -2,39 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>OneX — Explorer & Wallet</title>
   <script src="https://cdn.jsdelivr.net/npm/@noble/ed25519@2.1.0/+esm" type="module"></script>
   <script src="onex-provider.js" defer></script>
   <style>
     :root { --bg: #0a0e14; --card: #141b26; --accent: #00e5b0; --accent2: #7c5cff; --text: #eef2f8; --muted: #7d8da6; --danger: #ff6b6b; }
     * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
-    header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid #243044; flex-wrap: wrap; gap: 1rem; }
-    header h1 { margin: 0; font-size: 1.35rem; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    nav { display: flex; gap: 0.5rem; }
-    nav button { background: transparent; border: 1px solid #2a3544; color: var(--muted); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; min-height: 100dvh; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem; border-bottom: 1px solid #243044;
+      flex-wrap: wrap; gap: 0.75rem;
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(10, 14, 20, 0.92);
+      backdrop-filter: blur(10px);
+    }
+    header h1 { margin: 0; font-size: 1.15rem; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    nav button {
+      background: transparent; border: 1px solid #2a3544; color: var(--muted);
+      padding: 0.5rem 0.85rem; border-radius: 8px; cursor: pointer;
+      font-size: 0.9rem; min-height: 44px;
+    }
     nav button.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,176,0.08); }
-    main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
     .panel { display: none; }
     .panel.active { display: block; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
-    .card { background: var(--card); padding: 1.25rem; border-radius: 12px; border: 1px solid #243044; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+    .card { background: var(--card); padding: 1.15rem; border-radius: 12px; border: 1px solid #243044; min-width: 0; }
     .card label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    .card .val { font-size: 1.4rem; font-weight: 600; margin-top: 0.35rem; word-break: break-all; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+    .card .val { font-size: 1.25rem; font-weight: 600; margin-top: 0.35rem; word-break: break-all; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; min-width: 520px; }
     th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid #243044; }
     th { color: var(--muted); font-size: 0.75rem; }
     .hash { font-family: ui-monospace, monospace; font-size: 0.8rem; }
-    input, textarea, select { width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #2a3544; background: #0f1419; color: var(--text); margin-bottom: 0.75rem; font-family: inherit; }
-    button.primary { background: var(--accent); color: #0a0e14; border: none; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    button.secondary { background: transparent; border: 1px solid #2a3544; color: var(--text); padding: 0.65rem 1.25rem; border-radius: 8px; cursor: pointer; margin-right: 0.5rem; }
+    input, textarea, select {
+      width: 100%; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #2a3544;
+      background: #0f1419; color: var(--text); margin-bottom: 0.75rem; font-family: inherit;
+      font-size: 16px;
+    }
+    button.primary {
+      background: var(--accent); color: #0a0e14; border: none;
+      padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer;
+      min-height: 44px;
+    }
+    button.secondary {
+      background: transparent; border: 1px solid #2a3544; color: var(--text);
+      padding: 0.65rem 1.25rem; border-radius: 8px; cursor: pointer; margin-right: 0.5rem;
+      min-height: 44px;
+    }
     .wallet-addr { font-family: monospace; font-size: 0.75rem; word-break: break-all; color: var(--accent); }
-    .msg { color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; }
+    .msg { color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; word-break: break-word; }
     .msg.err { color: var(--danger); }
     .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; background: rgba(0,229,176,0.15); color: var(--accent); }
     .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-    #connect-status { font-size: 0.85rem; color: var(--muted); }
+    #connect-status { font-size: 0.85rem; color: var(--muted); word-break: break-all; }
+    .wallet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 768px) {
+      main { padding: 1rem; }
+      header { padding: 0.85rem 1rem; }
+      header h1 { flex: 1 1 100%; }
+      .row { width: 100%; }
+      #btn-connect { flex: 1; min-width: 140px; }
+      .wallet-grid { grid-template-columns: 1fr; gap: 1rem; }
+      button.secondary { width: 100%; margin-right: 0; margin-bottom: 0.5rem; }
+    }
   </style>
 </head>
 <body>
@@ -55,7 +89,9 @@
       <p class="msg">Production node API · JSON-RPC at <code>/rpc</code> · Network ID <span id="net-id">—</span></p>
       <div class="grid" id="stats"></div>
       <h2>Recent blocks</h2>
+      <div class="table-wrap">
       <table><thead><tr><th>Height</th><th>Hash</th><th>Txs</th><th>Miner</th></tr></thead><tbody id="blocks"></tbody></table>
+      </div>
       <div id="faucet-box" style="margin-top:2rem;display:none">
         <h2>Testnet faucet</h2>
         <input id="faucet-addr" placeholder="Your 64-char address" />
@@ -70,7 +106,7 @@
         <p class="msg" style="margin-top:0.75rem">OneX uses <strong>Ed25519</strong> (64-char addresses), not Ethereum accounts. Use this wallet or the <strong>OneX Wallet</strong> browser extension — standard MetaMask cannot sign OneX transactions.</p>
       </div>
 
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:1.5rem">
+      <div class="wallet-grid">
         <div class="card">
           <h3>Create / import</h3>
           <button type="button" class="secondary" onclick="createWallet()">Create new wallet</button>

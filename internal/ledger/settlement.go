@@ -392,8 +392,12 @@ func SettlementCapabilities(cfg Config, bank BankProviderConfig, evmSender, onex
 		"hybxMiddleware": hx.Enabled,
 		"hybxFederation": hx.Enabled,
 		"hybxExchange":   "/bridge/bank/hybx/exchange",
+		"fiatBatchMiddleware": true,
+		"fiatBatchEndpoint":   "/bridge/ledger/middleware/fiat-settle",
+		"aggregateFundClasses":  AggregateFundClasses(),
+		"stablecoinMainnet":     EthereumMainnetChain,
 		"kinds":          []string{string(SettlementVault), string(SettlementInternal), string(SettlementRealFiat), string(SettlementRealCrypto)},
-		"payoutAssets":   []string{"USD", "EUR", "GBP", "BTC", "ETH", "USDT", "USDC", "BNB", "SOL", "ONEX"},
-		"pipeline":       []string{"quote", "debit", "convert", "settle", "hybx-federate"},
+		"payoutAssets":   []string{"USD", "EUR", "GBP", "BTC", "ETH", "USDT", "USDC", "BNB", "SOL", "ONEX", DefaultStableSymbol},
+		"pipeline":       []string{"quote", "aggregate", "convert", "mint", "settle", "hybx-federate"},
 	}
 }

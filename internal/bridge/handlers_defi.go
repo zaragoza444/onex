@@ -41,6 +41,7 @@ func (s *Server) registerDeFiRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/bridge/onex-swap/bridge", s.handleBridgeExec)
 	registerLegacySwapRoutes(mux, s)
 	s.registerLedgerRoutes(mux)
+	s.registerEthereumRoutes(mux)
 	s.registerBankRoutes(mux)
 	s.registerSwiftRoutes(mux)
 	s.registerCardRoutes(mux)
@@ -577,7 +578,7 @@ func (s *Server) handleSendToken(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, res)
 }
 
-// registerLegacySwapRoutes keeps old Shiva Swap API paths working after the OneX rename.
+// registerLegacySwapRoutes keeps old /bridge/shiva-swap/* paths working after the OneX rename.
 func registerLegacySwapRoutes(mux *http.ServeMux, s *Server) {
 	legacyRoutes := map[string]http.HandlerFunc{
 		"/bridge/shiva-swap/pools":          s.handleOneXSwapPools,

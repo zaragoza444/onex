@@ -167,10 +167,11 @@ func (c *HybrixClient) get(path string) (json.RawMessage, error) {
 }
 
 func (c *HybrixClient) pollProc(id string) (json.RawMessage, error) {
-	deadline := time.Now().Add(25 * time.Second)
+	client := &http.Client{Timeout: 8 * time.Second}
+	deadline := time.Now().Add(20 * time.Second)
 	for time.Now().Before(deadline) {
 		url := c.cfg.BaseURL + "/proc/" + id
-		resp, err := http.Get(url)
+		resp, err := client.Get(url)
 		if err != nil {
 			return nil, err
 		}

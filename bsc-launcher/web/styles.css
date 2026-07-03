@@ -1255,9 +1255,60 @@ input:focus, select:focus {
 }
 
 @media (max-width: 768px) {
-  .mission-bar { flex-wrap: wrap; }
-  .mission-clock { order: 2; flex: 1; min-width: 120px; }
-  .nav-links { order: 3; width: 100%; flex-wrap: wrap; }
+  .mission-bar {
+    flex-wrap: wrap;
+    padding: 0.65rem 1rem;
+    gap: 0.65rem;
+    position: relative;
+  }
+  .nav-brand { flex: 1; min-width: 0; }
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    order: 3;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border-dim);
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--primary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .nav-toggle[aria-expanded="true"] {
+    border-color: var(--primary);
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+  }
+  .mission-clock { order: 2; min-width: 120px; }
+  .nav-links {
+    order: 4;
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.75rem 0 0.25rem;
+    border-top: 1px solid var(--border-dim);
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a {
+    width: 100%;
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+  }
+  .nav-actions {
+    order: 5;
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 0.35rem;
+    border-top: 1px solid var(--border-dim);
+  }
+  .wallet-addr {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .field-grid { grid-template-columns: 1fr; }
   .mission-hero { padding-top: 2rem; }
   .hero-grid { grid-template-columns: 1fr; text-align: center; }
@@ -1266,5 +1317,29 @@ input:focus, select:focus {
   .hero-earth { order: -1; }
   .earth-orbit { width: 200px; height: 200px; }
   .earth-sphere { width: 140px; height: 140px; }
-  .telemetry-grid { grid-template-columns: repeat(2, 1fr); }
+  .telemetry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-stats { grid-template-columns: 1fr; }
+  .dashboard-top { flex-direction: column; align-items: stretch; }
+  .dashboard-actions { width: 100%; }
+  .dashboard-actions .btn { flex: 1; min-width: 0; }
+  .dashboard-panel { padding: 1rem; overflow: hidden; }
+  .panel-head { flex-wrap: wrap; align-items: flex-start; }
+  .panel-head h2 { flex: 1; min-width: 0; }
+  .token-grid { grid-template-columns: 1fr; }
+  .dex-grid { grid-template-columns: 1fr; }
+  .view { padding: 0 1rem 2.5rem; }
+  .lookup-row { flex-direction: column; }
+  .lookup-row input, .lookup-row .btn { width: 100%; }
+  body.nav-open { overflow: hidden; }
 }
+
+@media (max-width: 480px) {
+  .mission-clock { display: none; }
+  .telemetry-grid { grid-template-columns: 1fr; }
+  .tel-card { min-height: 72px; }
+  .global-status, .env-badge { font-size: 0.65rem; }
+  .nav-actions .btn { width: 100%; justify-content: center; }
+}
+
+.nav-toggle { display: none; }

@@ -19,6 +19,7 @@ go-sdk.zip
 !.env.production.example
 remotes.env
 configs/faucet-testnet.env
+configs/quiknode.env
 **/wallets/*.json
 !**/wallets/.gitkeep
 

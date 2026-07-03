@@ -16,6 +16,12 @@ func TestNormalizeRPCMethod(t *testing.T) {
 	}
 }
 
+func TestRewriteTextBranding(t *testing.T) {
+	if got := RewriteText("Shiva Blockchain repo at shiva-blockchain/"); got != "OneX Blockchain repo at onex-blockchain/" {
+		t.Fatalf("got %q", got)
+	}
+}
+
 func TestMigrateBalanceKeys(t *testing.T) {
 	bal := map[string]string{
 		"shiva-mainnet-1:SHIVA": "100",

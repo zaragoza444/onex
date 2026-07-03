@@ -41,6 +41,7 @@ a:hover { text-decoration: underline; }
 .nav-inner {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 0; gap: 16px;
+  position: relative;
 }
 .brand {
   display: flex; align-items: center; gap: 10px;
@@ -53,7 +54,20 @@ a:hover { text-decoration: underline; }
   color: var(--text-muted); font-size: 0.92rem; font-weight: 500; text-decoration: none;
 }
 .nav-links a:hover { color: var(--text); }
-.nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.4rem; cursor: pointer; }
+.nav-toggle {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nav-toggle[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -237,13 +251,22 @@ section { padding: 72px 0; }
   font-size: 0.82rem; color: var(--text-muted);
 }
 
-.production-status {
+.production-status,
+.orchestration-panel {
   margin-top: 20px; padding: 18px 20px; border-radius: var(--radius);
   background: var(--bg-card); border: 1px solid var(--border);
+  min-width: 0;
+  overflow: hidden;
 }
 .production-status-head {
   display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
   font-family: var(--font-display); font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+.production-status-head strong {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
 }
 .status-dot {
   width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
@@ -261,12 +284,17 @@ section { padding: 72px 0; }
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px;
 }
 .production-status-item {
-  display: flex; justify-content: space-between; gap: 12px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
   font-size: 0.85rem; padding: 8px 0; border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.production-status-item span:first-child { color: var(--text-muted); flex-shrink: 0; }
+.production-status-item strong {
+  font-weight: 600; text-align: right;
+  word-break: break-word;
+  min-width: 0;
 }
 .production-status-item:last-child { border-bottom: none; }
-.production-status-item span:first-child { color: var(--text-muted); }
-.production-status-item strong { font-weight: 600; text-align: right; }
 
 .hero-badge span:first-child,
 #hero-badge-dot {
@@ -284,10 +312,41 @@ section { padding: 72px 0; }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 @media (max-width: 900px) {
-  .nav-links { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0;
-    background: var(--bg); padding: 20px; border-bottom: 1px solid var(--border); }
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    padding: 16px 20px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    gap: 4px;
+    z-index: 120;
+  }
   .nav-links.open { display: flex; }
-  .nav-toggle { display: block; }
+  .nav-links a {
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-links a:last-child { border-bottom: none; }
+  .nav-links .btn { width: 100%; margin-top: 8px; }
+  .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  body.nav-open { overflow: hidden; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .network-box, .contact-grid, .footer-grid { grid-template-columns: 1fr; }
+  .production-status-grid { grid-template-columns: 1fr; }
+  .production-status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .production-status-item strong { text-align: left; }
+  .hero { padding: 64px 0 56px; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn { width: 100%; margin-left: 0 !important; }
 }

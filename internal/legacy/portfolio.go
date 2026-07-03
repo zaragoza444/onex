@@ -2,7 +2,7 @@ package legacy
 
 import "strconv"
 
-// MigrateBalanceKeys rewrites legacy Shiva token keys in a balance map.
+// MigrateBalanceKeys rewrites legacy token keys in a balance map.
 func MigrateBalanceKeys(balances map[string]string) bool {
 	if len(balances) == 0 {
 		return false

@@ -26,7 +26,7 @@ Path manifest (single config to wire everything):
 
 ## Files to copy (attach or `scp`)
 
-From repo root `shiva-blockchain/`:
+From repo root `onex-blockchain/`:
 
 ```
 configs/bridge7.paths.json
@@ -123,9 +123,9 @@ sudo systemctl restart onex-bridge
 ## Repo paths on this PC
 
 ```
-c:\home\ubuntu\shiva-blockchain\deploy\BRIDGE7-SHARE.md          (this file)
-c:\home\ubuntu\shiva-blockchain\configs\bridge7.paths.json
-c:\home\ubuntu\shiva-blockchain\data\bridge7\
+c:\home\ubuntu\onex-blockchain\deploy\BRIDGE7-SHARE.md          (this file)
+c:\home\ubuntu\onex-blockchain\configs\bridge7.paths.json
+c:\home\ubuntu\onex-blockchain\data\bridge7\
 ```
 
 ---

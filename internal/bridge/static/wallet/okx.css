@@ -1466,6 +1466,86 @@ html.onex-mobile .quick-action-icon {
 .ledger-settle-step.failed { color: #ff4d4f; }
 .ledger-settle-step.skipped { opacity: 0.6; }
 
+/* Ledger orchestration panels (settlement + fiat batch middleware) */
+.orchestration-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+.ledger-settlement-card.orchestration-panel .ledger-xfer-tabs,
+.ledger-fiat-batch-card.orchestration-panel .ledger-convert-row {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.ledger-settlement-card.orchestration-panel .ledger-xfer-tabs::-webkit-scrollbar,
+.ledger-fiat-batch-card.orchestration-panel .ledger-convert-row::-webkit-scrollbar {
+  display: none;
+}
+.ledger-settlement-steps {
+  max-width: 100%;
+}
+.ledger-settle-step {
+  max-width: 100%;
+  word-break: break-word;
+}
+.ledger-settlement-caps {
+  word-break: break-word;
+}
+.ledger-fiat-batch-card .btn-secondary,
+.ledger-fiat-batch-card .btn-primary,
+.ledger-settlement-card .btn-primary {
+  width: 100%;
+  max-width: 100%;
+}
+
+html.onex-mobile .ledger-settlement-card .ledger-xfer-tabs {
+  flex-wrap: nowrap;
+}
+html.onex-mobile .ledger-settlement-card .ledger-xfer-tab {
+  flex: 0 0 auto;
+  min-width: 88px;
+  font-size: 11px;
+  padding: 10px 12px;
+}
+html.onex-mobile .ledger-settlement-steps,
+html.onex-mobile .ledger-fiat-batch-card .ledger-settlement-steps {
+  flex-direction: column;
+  align-items: stretch;
+}
+html.onex-mobile .ledger-settle-step {
+  width: 100%;
+}
+html.onex-mobile .ledger-convert-row .dex-max,
+html.onex-mobile .ledger-convert-row .ledger-max {
+  flex: 0 0 auto;
+}
+html.onex-mobile .row2 {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 480px) {
+  .ledger-settlement-card .ledger-xfer-tabs {
+    flex-wrap: nowrap;
+  }
+  .ledger-settlement-card .ledger-xfer-tab {
+    flex: 0 0 auto;
+    min-width: 84px;
+    font-size: 11px;
+  }
+  .ledger-settlement-steps {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ledger-settle-step {
+    width: 100%;
+  }
+  .ledger-fiat-batch-card input,
+  .ledger-fiat-batch-card .btn-secondary,
+  .ledger-fiat-batch-card .btn-primary {
+    width: 100%;
+  }
+}
+
 .fund-release-overlay {
   position: fixed;
   inset: 0;

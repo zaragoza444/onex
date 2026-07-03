@@ -124,6 +124,39 @@ def stream_command(client: paramiko.SSHClient, script: str) -> tuple[str, int]:
     return "".join(chunks), channel.recv_exit_status()
 
 
+def load_local_env() -> None:
+    """Load ROOT/.env into os.environ (does not override existing vars)."""
+    env_path = ROOT / ".env"
+    if not env_path.is_file():
+        return
+    for line in env_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key = key.strip()
+        val = val.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+def quiknode_env_block() -> str:
+    rpc = os.environ.get("ONEX_ETHEREUM_RPC", "")
+    qn = os.environ.get("ONEX_QUICKNODE_API_KEY", "")
+    master = os.environ.get("ONEX_ETHEREUM_MASTER_WALLET", "")
+    holder = os.environ.get("ONEX_EVM_HOLDER", master)
+    lines = []
+    if rpc:
+        lines.append(f"ONEX_ETHEREUM_RPC={rpc}")
+    if qn:
+        lines.append(f"ONEX_QUICKNODE_API_KEY={qn}")
+    if master:
+        lines.append(f"ONEX_ETHEREUM_MASTER_WALLET={master}")
+    if holder:
+        lines.append(f"ONEX_EVM_HOLDER={holder}")
+    return "\n".join(lines)
+
+
 def remote_script(api_key: str, *, local_sync: bool) -> str:
     sync_block = ""
     if not local_sync:
@@ -210,6 +243,7 @@ ONEX_PUBLIC_HOST={HOST}
 DBIS138_RPC_URL=https://rpc-core.d-bis.org
 DBIS138_EXPLORER=https://explorer.d-bis.org
 DBIS138_CHAIN_ID=138
+{quiknode_env_block()}
 EOF
 
 sudo tee /etc/systemd/system/onexd.service >/dev/null <<UNIT
@@ -297,6 +331,7 @@ curl -sf http://127.0.0.1:8545/health && echo " onexd OK" || echo " onexd FAIL"
 curl -sf http://127.0.0.1:9338/health && echo " bridge OK" || echo " bridge FAIL"
 curl -sf http://127.0.0.1:9338/bridge/health/green | head -c 300; echo
 curl -sf http://127.0.0.1:9338/bridge/ledger/status | head -c 200; echo
+curl -sf http://127.0.0.1:9338/bridge/ethereum/status | head -c 400; echo
 curl -sf http://127.0.0.1:9340/health && echo " token-lab OK" || echo " token-lab FAIL"
 curl -sf -X POST http://127.0.0.1:9338/bridge/cards/101.1/issue -H "Content-Type: application/json" -d '{{}}' | head -c 400; echo
 systemctl is-active onexd onex-bridge onex-token-lab
@@ -309,6 +344,7 @@ echo "PUBLIC_TOKEN_LAB=http://{HOST}:9340/"
 
 
 def main() -> int:
+    load_local_env()
     password = os.environ.get("SSH_PASS")
     if not password:
         print("SSH_PASS required (ubuntu@51.75.64.28)", file=sys.stderr)
@@ -344,7 +380,9 @@ echo "Extracted to {REMOTE}"
             os.unlink(archive_path)
 
     print("Running remote build + systemd...", flush=True)
-    out, code = stream_command(client, remote_script(api_key, local_sync=LOCAL_SYNC))
+    out, code = stream_command(
+        client, remote_script(api_key, local_sync=LOCAL_SYNC)
+    )
     client.close()
 
     if "bridge OK" in out and "active" in out:

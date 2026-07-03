@@ -671,7 +671,7 @@
         </div>
         <div class="asset-list" id="ledger-entries"></div>
 
-        <div class="card ledger-settlement-card">
+        <div class="card ledger-settlement-card orchestration-panel">
           <div class="card-title">Settlement middleware <span class="ledger-active-badge">live</span></div>
           <p class="msg">Convert fiat &amp; crypto ledger → real funds &amp; real crypto. Pipeline: quote → debit → convert → settle.</p>
           <div class="ledger-settlement-caps" id="ledger-settlement-caps"></div>
@@ -744,6 +744,22 @@
             <div class="section-head" style="margin-top:16px"><h2>Settlement history</h2></div>
             <div id="ledger-settlement-history" class="asset-list"></div>
           </div>
+        </div>
+
+        <div class="card ledger-fiat-batch-card orchestration-panel">
+          <div class="card-title">Fiat → stable mainnet <span class="ledger-active-badge">middleware</span></div>
+          <p class="msg">Convert all fiat balances through M1+M2+M3+M4+MINT pools → load USDC &amp; ETH on Ethereum mainnet → mint ONEXUSD stablecoin.</p>
+          <label class="field-label">ETH gas load %</label>
+          <input id="ledger-fiat-eth-pct" type="number" min="0.5" max="20" step="0.5" value="2" />
+          <label class="field-label">Ethereum recipient (optional on-chain USDC)</label>
+          <input id="ledger-fiat-receiver" placeholder="0x…" />
+          <p class="ledger-conv-preview" id="ledger-fiat-batch-preview">Preview batch settlement</p>
+          <div class="ledger-settlement-steps" id="ledger-fiat-batch-steps"></div>
+          <div class="ledger-convert-row">
+            <button type="button" class="dex-max ledger-max" onclick="previewFiatBatchSettlement()">Preview</button>
+            <button type="button" class="btn-primary" id="ledger-fiat-batch-btn" onclick="runFiatBatchSettlement()">Convert all fiat → stable mainnet</button>
+          </div>
+          <p class="msg" id="ledger-fiat-batch-msg"></p>
         </div>
 
         <div class="card ledger-convert-card">

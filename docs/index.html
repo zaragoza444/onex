@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>OneX Blockchain — Production PoW Chain &amp; DeFi Wallet</title>
   <meta name="description" content="OneX is a production proof-of-work blockchain with a full DeFi wallet, real ledger, online bank, virtual cards, and multi-chain token platform.">
   <meta name="theme-color" content="#06080c">
@@ -15,7 +15,8 @@
     window.ONEX_SITE = {
       productionUrl: 'https://onexproduction.com',
       walletUrl: 'wallet/',
-      walletPath: 'wallet/'
+      walletPath: 'wallet/',
+      consoleUrl: 'https://onexproduction.com/token-lab/'
     };
   </script>
 </head>
@@ -26,11 +27,13 @@
         <img src="assets/onex.svg" alt="OneX" width="36" height="36">
         OneX
       </a>
-      <button class="nav-toggle" type="button" aria-label="Menu">☰</button>
-      <div class="nav-links">
+      <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="portal-nav">☰</button>
+      <div class="nav-links" id="portal-nav">
         <a href="#products">Products</a>
         <a href="#features">Features</a>
         <a href="#network">Network</a>
+        <a data-console href="/token-lab/">Mission Control</a>
+        <a data-explorer href="https://onexproduction.com/explorer/">Explorer</a>
         <a href="contact.html">Contact</a>
         <a class="btn btn-primary" data-wallet href="wallet/">Open Wallet</a>
       </div>
@@ -148,7 +151,7 @@
             <div class="spec-row"><span>Bridge API</span><a id="prod-status-api-link" data-status-api href="https://onexproduction.com/bridge/production/status">/bridge/production/status</a></div>
             <div class="spec-row"><span>Domain</span><a href="https://onexproduction.com">onexproduction.com</a></div>
           </div>
-          <div id="production-status" class="production-status" aria-live="polite">
+          <div id="production-status" class="production-status orchestration-panel" aria-live="polite">
             <div class="production-status-head">
               <span class="status-dot loading" id="prod-status-dot"></span>
               <strong id="prod-status-title">Connecting to production…</strong>

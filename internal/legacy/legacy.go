@@ -72,9 +72,13 @@ func copyTree(src, dst string) error {
 	})
 }
 
-// RewriteText replaces legacy Shiva identifiers with OneX equivalents.
+// RewriteText replaces legacy Shiva / shiva-blockchain identifiers with OneX equivalents.
 func RewriteText(s string) string {
 	replacements := []struct{ old, new string }{
+		{"Shiva Blockchain", "OneX Blockchain"},
+		{"shiva blockchain", "OneX blockchain"},
+		{"shiva-blockchain", "onex-blockchain"},
+		{"Shiva-Blockchain", "OneX-Blockchain"},
 		{"shiva-mainnet-1", "onex-mainnet-1"},
 		{"shiva-testnet-1", "onex-testnet-1"},
 		{".shiva", ".onex"},

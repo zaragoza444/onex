@@ -14,7 +14,8 @@
   <script>
     window.ONEX_SITE = {
       productionUrl: 'https://onexproduction.com',
-      walletPath: '/wallet/'
+      walletPath: '/wallet/',
+      consoleUrl: 'https://onexproduction.com/token-lab/'
     };
   </script>
 </head>
@@ -25,11 +26,13 @@
         <img src="assets/onex.svg" alt="OneX" width="36" height="36">
         OneX
       </a>
-      <button class="nav-toggle" type="button" aria-label="Menu">☰</button>
-      <div class="nav-links">
+      <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="portal-nav">☰</button>
+      <div class="nav-links" id="portal-nav">
         <a href="index.html#products">Products</a>
         <a href="index.html#features">Features</a>
         <a href="index.html#network">Network</a>
+        <a data-console href="/token-lab/">Mission Control</a>
+        <a data-explorer href="/explorer/">Explorer</a>
         <a href="contact.html">Contact</a>
         <a class="btn btn-primary" data-wallet href="/wallet/">Open Wallet</a>
       </div>

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/onex-blockchain/onex/internal/bridge/chains"
 	"github.com/onex-blockchain/onex/internal/legacy"
 )
 
@@ -74,6 +75,9 @@ func (r *Registry) GetChains() []ChainInfo {
 	defer r.mu.RUnlock()
 	out := make([]ChainInfo, len(r.Chains))
 	copy(out, r.Chains)
+	for i := range out {
+		out[i].RPC = chains.ResolveChainRPC(out[i].ID, out[i].RPC)
+	}
 	return out
 }
 

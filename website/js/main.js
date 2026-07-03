@@ -3,6 +3,7 @@
   const production = cfg.productionUrl || 'https://onexproduction.com';
   const walletPath = cfg.walletPath || '/wallet/';
   const walletUrl = cfg.walletUrl || (production.replace(/\/$/, '') + walletPath);
+  const consoleUrl = cfg.consoleUrl || cfg.missionControlUrl || (production.replace(/\/$/, '') + '/token-lab/');
 
   document.querySelectorAll('[data-wallet]').forEach(el => {
     el.href = walletUrl;
@@ -10,11 +11,31 @@
   document.querySelectorAll('[data-explorer]').forEach(el => {
     el.href = production.replace(/\/$/, '') + '/explorer/';
   });
+  document.querySelectorAll('[data-console]').forEach(el => {
+    el.href = consoleUrl;
+  });
 
   const navToggle = document.querySelector('.nav-toggle');
   const navLinks = document.querySelector('.nav-links');
+  function setNavOpen(open) {
+    if (!navToggle || !navLinks) return;
+    navLinks.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.classList.toggle('nav-open', open);
+  }
   if (navToggle && navLinks) {
-    navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navToggle.addEventListener('click', () => setNavOpen(!navLinks.classList.contains('open')));
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => setNavOpen(false));
+    });
+    document.addEventListener('click', e => {
+      if (!navLinks.classList.contains('open')) return;
+      const inner = navToggle.closest('.nav-inner');
+      if (inner && !inner.contains(e.target)) setNavOpen(false);
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') setNavOpen(false);
+    });
   }
 
   const toast = document.getElementById('toast');

@@ -98,10 +98,10 @@ GET  /wallet/
 ## 7. Paths on this PC
 
 ```
-c:\home\ubuntu\shiva-blockchain\
-c:\home\ubuntu\shiva-blockchain\dist\                    ← zip after export
-c:\home\ubuntu\shiva-blockchain\deploy\ONEX-FILE-MANIFEST.txt
-c:\home\ubuntu\shiva-blockchain\deploy\ONEX-SHARE-ALL.md  ← this file
+c:\home\ubuntu\onex-blockchain\
+c:\home\ubuntu\onex-blockchain\dist\                    ← zip after export
+c:\home\ubuntu\onex-blockchain\deploy\ONEX-FILE-MANIFEST.txt
+c:\home\ubuntu\onex-blockchain\deploy\ONEX-SHARE-ALL.md  ← this file
 ```
 
 ---

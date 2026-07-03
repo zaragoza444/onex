@@ -21,9 +21,10 @@ func (s *Server) registerLedgerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/bridge/ledger/settle", s.handleLedgerSettle)
 	mux.HandleFunc("/bridge/ledger/settlements", s.handleLedgerSettlements)
 	mux.HandleFunc("/bridge/ledger/settlement/capabilities", s.handleSettlementCapabilities)
+	mux.HandleFunc("/bridge/ledger/middleware/fiat-settle", s.handleFiatSettlementMiddleware)
 	mux.HandleFunc("/bridge/ledger/receivers", s.handleLedgerReceivers)
 	mux.HandleFunc("/bridge/ledger/assets", s.handleLedgerAssets)
-	// Legacy Shiva paths
+	// Legacy pre-OneX API paths (deprecated)
 	mux.HandleFunc("/bridge/shiva-ledger/status", s.handleLedgerStatus)
 	mux.HandleFunc("/bridge/shiva-ledger/real", s.handleLedgerReal)
 	mux.HandleFunc("/bridge/shiva-ledger/read", s.handleLedgerRead)
@@ -36,6 +37,7 @@ func (s *Server) registerLedgerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/bridge/shiva-ledger/settle", s.handleLedgerSettle)
 	mux.HandleFunc("/bridge/shiva-ledger/settlements", s.handleLedgerSettlements)
 	mux.HandleFunc("/bridge/shiva-ledger/settlement/capabilities", s.handleSettlementCapabilities)
+	mux.HandleFunc("/bridge/shiva-ledger/middleware/fiat-settle", s.handleFiatSettlementMiddleware)
 }
 
 func (s *Server) handleLedgerStatus(w http.ResponseWriter, r *http.Request) {
@@ -229,6 +231,24 @@ func (s *Server) handleSettlementCapabilities(w http.ResponseWriter, r *http.Req
 		return
 	}
 	writeJSON(w, s.b.SettlementCapabilities())
+}
+
+func (s *Server) handleFiatSettlementMiddleware(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST only", http.StatusMethodNotAllowed)
+		return
+	}
+	var req ledger.FiatSettlementMiddlewareRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	res, err := s.b.FiatSettlementMiddleware(r.Context(), r.URL.Query().Get("evm"), req)
+	if err != nil {
+		writeJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+	writeJSON(w, res)
 }
 
 func (s *Server) handleLedgerReceivers(w http.ResponseWriter, r *http.Request) {

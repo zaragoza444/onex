@@ -1,4 +1,4 @@
-# Export full OneX / shiva-blockchain tree for sharing (no secrets).
+# Export full OneX / onex-blockchain tree for sharing (no secrets).
 # Usage: .\scripts\export-onex-share.ps1
 # Output: dist\onex-blockchain-share.zip + deploy\ONEX-FILE-MANIFEST.txt
 

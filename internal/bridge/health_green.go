@@ -3,7 +3,9 @@ package bridge
 import (
 	"context"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/onex-blockchain/onex/internal/bridge/chains"
 	"github.com/onex-blockchain/onex/internal/ledger"
@@ -30,7 +32,7 @@ func nodeOptional() bool {
 
 // GreenHealth returns a unified all-systems status for UI and ops.
 func (b *Bridge) GreenHealth(ctx context.Context, evmHolder string) map[string]interface{} {
-	b.ensureProductionBootstrapped(ctx, evmHolder)
+	// Production bootstrap runs in background from cmd/onex-bridge; do not block health here.
 
 	ledgerSt := b.LedgerStatus()
 	settle := b.SettlementCapabilities()
@@ -76,22 +78,52 @@ func (b *Bridge) GreenHealth(ctx context.Context, evmHolder string) map[string]i
 	}
 
 	evmSender := chains.LoadBridgeSenderKeySilent()
+	eth := chains.ProbeEthereumRPC(ctx)
+	evmSenderFunded := evmSender && ethBalancePositive(eth.SenderBalance)
+	masterCanSign := eth.MasterKeySet && ethBalancePositive(eth.MasterBalance)
 	hybxOnline := false
 	if ledger.LoadHybrixConfig().Enabled {
-		if _, err := ledger.NewHybrixClient().ListAssets(); err == nil {
-			hybxOnline = true
+		hybxCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
+		done := make(chan bool, 1)
+		go func() {
+			_, err := ledger.NewHybrixClient().ListAssets()
+			done <- err == nil
+		}()
+		select {
+		case hybxOnline = <-done:
+		case <-hybxCtx.Done():
+			hybxOnline = false
 		}
+		cancel()
 	}
-	evmOK := evmSender || (b.isProduction() && hybxOnline)
+	evmOK := evmSenderFunded || masterCanSign || hybxOnline
+	evmStatus := checkStatusSoft(evmSenderFunded || masterCanSign)
+	if !evmSenderFunded && !masterCanSign && hybxOnline {
+		evmStatus = "amber"
+	} else if !evmSenderFunded && !masterCanSign && evmSender {
+		evmStatus = "amber"
+	}
 	evmDetail := "HYBX chain settlement"
-	if evmSender {
+	if masterCanSign && eth.MasterWallet != "" {
+		evmDetail = "master " + eth.MasterWallet + " · " + eth.MasterBalance + " ETH"
+	} else if evmSender {
 		if addr, err := chains.BridgeSenderAddress(); err == nil {
 			evmDetail = "sender " + addr
 		} else {
 			evmDetail = "EVM sender key set"
 		}
+		if eth.Configured && eth.Online {
+			evmDetail += " · block " + itoa(int(eth.BlockNumber))
+		}
+		if !evmSenderFunded {
+			if eth.SenderBalance != "" {
+				evmDetail += " · " + eth.SenderBalance + " ETH (needs gas)"
+			} else {
+				evmDetail += " · fund sender or set ONEX_ETHEREUM_MASTER_KEY"
+			}
+		}
 	} else if !hybxOnline {
-		evmDetail = "set ONEX_EVM_SENDER_KEY or enable HYBX"
+		evmDetail = "set ONEX_ETHEREUM_MASTER_KEY or fund EVM sender"
 	}
 
 	snap, _ := b.ReadRealLedger(ctx, "all", evmHolder, b.LoadLatestImport())
@@ -144,15 +176,48 @@ func (b *Bridge) GreenHealth(ctx context.Context, evmHolder string) map[string]i
 		}
 	}
 
+	settleProd, _ := settle["production"].(bool)
+	settleEvm, _ := settle["evmSettlement"].(bool)
+	settleFunded, _ := settle["evmSenderFunded"].(bool)
+	settleFunded = settleFunded || masterCanSign
+	settleReady := settleProd && bankOK && (settleFunded || hybxOnline)
+	settleStatus := checkStatusSoft(settleReady)
+	if settleReady && !settleFunded {
+		settleStatus = "amber"
+	}
+	settleDetail := "convert → settle → HYBX"
+	if !settleProd {
+		settleDetail = "development mode"
+	} else if !settleEvm && !hybxOnline {
+		settleDetail = "configure EVM sender or HYBX"
+	}
+
+	ethDetail := "QuickNode RPC"
+	if eth.Configured {
+		if eth.Online {
+			ethDetail = "block " + itoa(int(eth.BlockNumber))
+			if eth.SenderWallet != "" {
+				ethDetail += " · sender " + eth.SenderBalance + " ETH"
+			}
+		} else if eth.Error != "" {
+			ethDetail = eth.Error
+		} else {
+			ethDetail = "RPC unreachable"
+		}
+	} else {
+		ethDetail = "set ONEX_ETHEREUM_RPC"
+	}
+
 	checks := []map[string]interface{}{
 		{"id": "bridge", "label": "Bridge API", "status": "green", "ok": true, "detail": "online"},
-		{"id": "ledger", "label": "Ledger middleware", "status": checkStatus(prodOK), "ok": prodOK, "detail": "production mode"},
+		{"id": "ledger", "label": "Ledger middleware", "status": checkStatusSoft(prodOK || ledgerHasValue), "ok": prodOK || ledgerHasValue, "detail": map[bool]string{true: "production mode", false: "development mode"}[prodOK]},
 		{"id": "bank", "label": "Bank / fiat ledger", "status": checkStatus(bankOK), "ok": bankOK, "detail": "NSB online bank"},
 		{"id": "import", "label": "Active import", "status": checkStatus(importOK), "ok": importOK, "detail": "real valuation import"},
-		{"id": "settlement", "label": "Settlement", "status": "green", "ok": true, "detail": "convert → settle → HYBX"},
+		{"id": "settlement", "label": "Settlement", "status": settleStatus, "ok": settleReady, "detail": settleDetail},
+		{"id": "ethereum", "label": "Ethereum mainnet", "status": checkStatusSoft(eth.Configured && eth.Online), "ok": eth.Configured && eth.Online, "detail": ethDetail},
 		{"id": "dbis138", "label": "DBIS chain 138", "status": checkStatus(dbisOK), "ok": dbisOK, "detail": "EVM chains configured"},
 		{"id": "node", "label": "OneX node", "status": checkStatusSoft(nodeCheckOK), "ok": nodeCheckOK, "detail": map[bool]string{true: "online", false: "optional offline"}[nodeOK]},
-		{"id": "evm", "label": "EVM settlement", "status": checkStatusSoft(evmOK), "ok": evmOK, "detail": evmDetail},
+		{"id": "evm", "label": "EVM settlement", "status": evmStatus, "ok": evmOK, "detail": evmDetail},
 		{"id": "value", "label": "Real valuation", "status": checkStatusSoft(ledgerHasValue), "ok": ledgerHasValue, "detail": "ledger + bank valued"},
 		{"id": "hybx", "label": "HYBX bridge", "status": checkStatusSoft(hybxOnline), "ok": hybxOnline, "detail": "api.hybrix.io live"},
 		{"id": "hybx-mw", "label": "HYBX exchange middleware", "status": checkStatusSoft(hybxMW), "ok": hybxMW, "detail": "banks · chains · platform"},
@@ -219,5 +284,24 @@ func (b *Bridge) GreenHealth(ctx context.Context, evmHolder string) map[string]i
 		"ledgerUsd":  snap.TotalUSD,
 		"settlement": settle,
 		"ledger":     ledgerSt,
+		"ethereum": map[string]interface{}{
+			"configured":     eth.Configured,
+			"online":         eth.Online,
+			"blockNumber":    eth.BlockNumber,
+			"senderWallet":   eth.SenderWallet,
+			"senderBalance":  eth.SenderBalance,
+			"senderFunded":   evmSenderFunded,
+			"masterWallet":   eth.MasterWallet,
+			"masterBalance":  eth.MasterBalance,
+		},
 	}
+}
+
+func ethBalancePositive(raw string) bool {
+	raw = strings.TrimSpace(raw)
+	if raw == "" || raw == "0" {
+		return false
+	}
+	f, err := strconv.ParseFloat(raw, 64)
+	return err == nil && f > 0.00001
 }
