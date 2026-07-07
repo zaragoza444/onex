@@ -51,6 +51,9 @@ func (s *Server) registerDeFiRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/swap", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/wallet/#swap", http.StatusFound)
 	})
+	mux.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/wallet/#dashboard", http.StatusFound)
+	})
 }
 
 func (s *Server) handleChains(w http.ResponseWriter, r *http.Request) {

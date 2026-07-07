@@ -141,7 +141,8 @@ function fmtAtomic(n, decimals = 8) {
 }
 
 const SCREEN_ALIASES = {
-  home: 'wallet', wallet: 'wallet', dashboard: 'wallet', swap: 'trade', trade: 'trade',
+  home: 'wallet', wallet: 'wallet', dashboard: 'dashboard', mission: 'dashboard',
+  swap: 'trade', trade: 'trade',
   stake: 'earn', loans: 'earn', earn: 'earn',
   discover: 'discover', nft: 'discover', tasks: 'discover',
   createtoken: 'discover', token: 'discover', chains: 'discover', networks: 'discover',
@@ -160,6 +161,7 @@ function showTab(name) {
     s.classList.toggle('active', s.id === 'screen-' + screen);
   });
   if (screen === 'trade') { loadAmmPools(); updateDexStatus(); updateSwapCTA(); }
+  if (screen === 'dashboard') loadDashboard();
   if (screen === 'earn') renderStakePools();
   if (screen === 'ledger') { refreshLedger(); initLedgerConvertSelects(); }
   if (screen === 'onlinebank') refreshOnlineBank();
@@ -531,6 +533,7 @@ async function init() {
   setInterval(() => bridgeStatus(), 20000);
   const hash = (location.hash || '').replace('#', '').toLowerCase();
   if (hash === 'swap') showTab('trade');
+  if (hash === 'dashboard') showTab('dashboard');
   else if (hash === 'ledger' || hash === 'real') showTab('ledger');
   else if (hash === 'bank' || hash === 'onlinebank') showTab('onlinebank');
   else if (hash === 'web3' || hash === 'dapp') showTab('web3');
@@ -592,6 +595,77 @@ async function loadGreenHealth() {
     const tip = c.detail ? ` title="${String(c.detail).replace(/"/g, '&quot;')}"` : '';
     return `<span class="green-check ${c.status}"${tip}>${icon} ${c.label}</span>`;
   }).join('');
+}
+
+async function loadDashboard() {
+  const evmQ = getEvmHolder() ? `?evm=${encodeURIComponent(getEvmHolder())}` : '';
+  const [health, prod, swap, cards, swift, bank] = await Promise.all([
+    api('/bridge/health/green' + evmQ),
+    api('/bridge/production/status' + evmQ),
+    api('/bridge/onex-swap/status'),
+    api('/bridge/cards/status'),
+    api('/bridge/bank/swift/status'),
+    api('/bridge/bank/status'),
+  ]);
+
+  const isGreen = health.allGreen || health.status === 'green';
+  const dot = document.getElementById('dashboard-status-dot');
+  const title = document.getElementById('dashboard-status-title');
+  const sub = document.getElementById('dashboard-subtitle');
+  if (dot) dot.className = 'dashboard-status-dot ' + (isGreen ? 'green' : 'amber');
+  if (title) title.textContent = isGreen ? 'All systems green' : 'Some checks need attention';
+  if (sub) {
+    const host = prod.publicWallet || prod.domain || swift.globalServer || 'OneX production';
+    sub.textContent = `${host} · ${prod.production ? 'production' : (prod.mode || 'live')}`;
+  }
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('dash-stat-ledger', health.ledgerUsd != null ? fmtUsd(health.ledgerUsd) : '—');
+  set('dash-stat-pools', String(swap.pools ?? 0));
+  set('dash-stat-cards', `${cards.active ?? 0}/${cards.cards ?? 0}`);
+  set('dash-stat-bank', String(bank.accounts ?? bank.online ? 'live' : '—'));
+
+  const checksEl = document.getElementById('dashboard-checks');
+  if (checksEl) {
+    checksEl.innerHTML = (health.checks || []).map(c => `
+      <div class="dashboard-check ${c.status}">
+        <span class="dashboard-check-icon">${c.status === 'green' ? '✓' : c.status === 'amber' ? '◐' : '✗'}</span>
+        <div>
+          <strong>${escapeHtml(c.label)}</strong>
+          <p>${escapeHtml(c.detail || c.status)}</p>
+        </div>
+      </div>`).join('');
+  }
+
+  const modules = [
+    { name: 'Swap', status: swap.active ? 'active' : 'inactive', detail: `${swap.pools || 0} pools · fee ${((swap.feeBps || 30) / 100).toFixed(2)}%`, action: () => showTab('trade') },
+    { name: 'Cards 101.1', status: (cards.programCards || 0) > 0 ? 'active' : 'pending', detail: `BIN ${cards.bin || '1011'} · ${cards.active || 0} active · Apple Pay · Google Pay · 2D · wire`, action: () => showTab('onlinebank') },
+    { name: 'SWIFT', status: swift.enabled ? 'active' : 'off', detail: `BIC ${swift.bic || '—'} · ${swift.globalServer || '—'}`, action: () => { showTab('onlinebank'); setOnlineBankMainTab('swift'); } },
+    { name: 'Online Bank', status: bank.online ? 'active' : 'off', detail: `${bank.accounts || 0} accounts · ${bank.transactions || 0} tx`, action: () => showTab('onlinebank') },
+    { name: 'HYBX', status: prod.hybx?.enabled || prod.hybrix?.enabled ? 'active' : 'off', detail: prod.hybxMiddleware?.routes ? `${prod.hybxMiddleware.routes} routes` : 'middleware', action: () => showTab('ledger') },
+    { name: 'Token Platform', status: (prod.platform?.totalTokens || 0) > 0 ? 'active' : 'ready', detail: `${prod.platform?.totalTokens ?? 0} tokens`, action: () => { showTab('discover'); showDiscoverSection('token'); } },
+  ];
+  const modEl = document.getElementById('dashboard-modules');
+  if (modEl) {
+    modEl.innerHTML = modules.map((m, i) => `
+      <button type="button" class="dashboard-module ${m.status}" data-mod="${i}">
+        <span class="dashboard-module-badge">${escapeHtml(m.status)}</span>
+        <strong>${escapeHtml(m.name)}</strong>
+        <p>${escapeHtml(m.detail)}</p>
+      </button>`).join('');
+    modEl.querySelectorAll('.dashboard-module').forEach((btn, i) => {
+      btn.addEventListener('click', modules[i].action);
+    });
+  }
+
+  const bootEl = document.getElementById('dashboard-bootstrap');
+  if (bootEl) {
+    const boot = await api('/bridge/production/bootstrap' + evmQ, { method: 'POST' });
+    const steps = boot.steps || [];
+    bootEl.innerHTML = steps.length
+      ? steps.map(s => `<div class="dashboard-boot-step ${s.status}"><span>${escapeHtml(s.phase)}</span><strong>${escapeHtml(s.detail)}</strong></div>`).join('')
+      : '<p class="msg">Production bootstrap not run yet.</p>';
+  }
 }
 
 async function loadProductionPlatform(existing) {

@@ -31,7 +31,7 @@
     <main class="screens">
       <!-- WALLET (Home) -->
       <section id="screen-wallet" class="screen active">
-        <div id="green-health-bar" class="green-health-bar hidden">
+        <div id="green-health-bar" class="green-health-bar hidden" onclick="showTab('dashboard')" style="cursor:pointer" title="Open Mission Control">
           <div class="green-health-head">
             <span class="green-health-dot" id="green-health-dot"></span>
             <strong id="green-health-title">All systems operational</strong>
@@ -93,6 +93,31 @@
           <a href="#" onclick="refreshAll();return false">Refresh</a>
         </div>
         <div class="asset-list" id="portfolio-grid"></div>
+      </section>
+
+      <!-- DASHBOARD (Mission Control) -->
+      <section id="screen-dashboard" class="screen">
+        <div class="dashboard-header">
+          <div class="dex-badge">MODULE::MISSION_CONTROL</div>
+          <h1>Dashboard</h1>
+          <p class="dex-sub" id="dashboard-subtitle">OneX production · global server</p>
+        </div>
+        <div class="dashboard-overall" id="dashboard-overall">
+          <span class="dashboard-status-dot" id="dashboard-status-dot"></span>
+          <strong id="dashboard-status-title">Loading…</strong>
+        </div>
+        <div class="dex-stats dashboard-stats">
+          <div class="dex-stat"><span>Ledger</span><strong id="dash-stat-ledger">—</strong></div>
+          <div class="dex-stat"><span>Swap pools</span><strong id="dash-stat-pools">—</strong></div>
+          <div class="dex-stat"><span>Cards</span><strong id="dash-stat-cards">—</strong></div>
+          <div class="dex-stat"><span>Bank accounts</span><strong id="dash-stat-bank">—</strong></div>
+        </div>
+        <div class="section-head"><h2>Systems</h2><button type="button" class="btn-secondary" onclick="loadDashboard()">Refresh</button></div>
+        <div class="dashboard-checks" id="dashboard-checks"></div>
+        <div class="section-head"><h2>Modules</h2></div>
+        <div class="dashboard-modules" id="dashboard-modules"></div>
+        <div class="section-head"><h2>Bootstrap</h2></div>
+        <div class="dashboard-bootstrap" id="dashboard-bootstrap"></div>
       </section>
 
       <!-- TRADE (AlltraSwap-style DEX) -->
@@ -1065,6 +1090,10 @@
       <button type="button" class="active" data-screen="wallet" onclick="showTab('wallet')">
         <span class="nav-icon">💼</span>
         Wallet
+      </button>
+      <button type="button" data-screen="dashboard" onclick="showTab('dashboard')">
+        <span class="nav-icon">📊</span>
+        Dashboard
       </button>
       <button type="button" data-screen="trade" onclick="showTab('trade')">
         <span class="nav-icon">⇄</span>
