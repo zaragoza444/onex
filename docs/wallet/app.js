@@ -56,7 +56,7 @@ function nodeExplorerUrl() {
   if (typeof window === 'undefined') return 'http://127.0.0.1:8545/explorer/';
   const h = window.location.hostname;
   if (h === 'localhost' || h === '127.0.0.1') return 'http://127.0.0.1:8545/explorer/';
-  if (window.location.protocol === 'https:' || h === 'novatrustee.digital') {
+  if (window.location.protocol === 'https:' || h === 'zblockchainsystem.com' || h === 'www.zblockchainsystem.com') {
     return window.location.origin + '/explorer/';
   }
   const base = (API || window.location.origin || '').replace(/\/$/, '');

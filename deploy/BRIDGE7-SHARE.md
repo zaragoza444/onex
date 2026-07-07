@@ -59,7 +59,7 @@ ONEX_CRYPTO_LEDGER_FILE=data/bridge7/crypto-ledger.json
 
 On VPS, set `ONEX_PROJECT_ROOT` to the repo install path (`/opt/onex` or `~/onex`).
 
-Full production template: `deploy/env.onexproduction.example`
+Full production template: `deploy/env.production.example`
 
 ---
 
@@ -104,13 +104,13 @@ cd /opt/onex   # or ~/onex
 git pull
 mkdir -p data/bridge7 configs
 # copy bridge7.paths.json + data/bridge7/*.json if not in git pull
-cp deploy/env.onexproduction.example .env   # edit ONEX_API_KEY, Fineract creds
+cp deploy/env.production.example .env   # edit ONEX_API_KEY, Fineract creds
 docker compose -f docker-compose.prod.yml up -d --build
 curl -s http://127.0.0.1:9338/bridge/bridge7/status | jq .
 ```
 
 One-shot script: `bash scripts/vps-go-live.sh`  
-Preflight from PC: `.\scripts\deploy-onexproduction.ps1 -VpsIp YOUR_IP`
+Preflight from PC: `.\scripts\run-vps-go-live.ps1 -VpsIp YOUR_IP -Domain zblockchainsystem.com`
 
 Systemd restart after env change:
 

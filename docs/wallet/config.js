@@ -43,7 +43,7 @@
     const h = location.hostname;
     if (h === 'localhost' || h === '127.0.0.1') {
       window.ONEX_BRIDGE_URL = 'http://127.0.0.1:9338';
-    } else if (location.pathname.startsWith('/wallet') || h === 'novatrustee.digital') {
+    } else if (location.pathname.startsWith('/wallet') || h === 'zblockchainsystem.com' || h === 'www.zblockchainsystem.com') {
       window.ONEX_BRIDGE_URL = location.origin;
     }
   }

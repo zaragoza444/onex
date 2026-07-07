@@ -18,4 +18,4 @@ ONEX_LEDGER_MODE=production
 ONEX_HYBX_ENABLED=1
 ONEX_HYBX_URL=https://api.hybrix.io
 ONEX_FINERACT_ENABLED=1   # optional, for Fineract routes
-ONEX_PRODUCTION_DOMAIN=onexproduction.com
+ONEX_PRODUCTION_DOMAIN=zblockchainsystem.com

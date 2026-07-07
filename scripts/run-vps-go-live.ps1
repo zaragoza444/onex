@@ -26,14 +26,14 @@ if (-not $sshOk) {
     Write-Host "The VPS may be stopped or the cloud firewall blocks access." -ForegroundColor Yellow
     Write-Host "Start the server in your host panel (OVH / Hetzner / etc.), then run ONE command in the web console:" -ForegroundColor Cyan
     Write-Host ""
-    $domainEnv = if ($Domain) { "ONEX_DEPLOY_DOMAIN=$Domain CERTBOT_EMAIL=hello@onexproduction.com " } else { "" }
+    $domainEnv = if ($Domain) { "ONEX_DEPLOY_DOMAIN=$Domain CERTBOT_EMAIL=hello@zblockchainsystem.com " } else { "" }
     Write-Host "  ${domainEnv}bash -c `"`$(curl -fsSL https://raw.githubusercontent.com/zaragoza444/onex/main/scripts/vps-go-live.sh || git clone https://github.com/zaragoza444/onex.git ~/onex && bash ~/onex/scripts/vps-go-live.sh)`"" -ForegroundColor White
     Write-Host ""
     Write-Host "Or if repo already on server:" -ForegroundColor Cyan
     Write-Host "  cd ~/onex && git pull && bash scripts/vps-go-live.sh" -ForegroundColor White
     Write-Host ""
     Write-Host "DNS (registrar / Cloudflare): A record @ and www -> $VpsIp" -ForegroundColor Cyan
-    Write-Host "  deploy/dns-records-onexproduction.md"
+    Write-Host "  deploy/dns-records.md"
     exit 1
 }
 
@@ -59,5 +59,5 @@ if ($env:SSH_PASS -or $ForceRemote) {
 }
 
 Write-Host ""
-Write-Host "After deploy, verify:" -ForegroundColor Cyan
-Write-Host "  .\scripts\deploy-onexproduction.ps1 -VpsIp $VpsIp"
+Write-Host "After deploy, verify DNS:" -ForegroundColor Cyan
+Write-Host "  Resolve-DnsName zblockchainsystem.com -Type A"

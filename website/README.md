@@ -1,6 +1,6 @@
 # OneX Marketing Website
 
-Static marketing site for **onexproduction.com**.
+Static marketing site for **zblockchainsystem.com**.
 
 ## Preview locally
 
@@ -22,7 +22,7 @@ See `docs/BUSINESS-EMAIL.md` and `configs/business-email.json`.
 
 | Address | Purpose |
 |---------|---------|
-| hello@onexproduction.com | General |
-| business@onexproduction.com | Partnerships |
-| support@onexproduction.com | Support |
-| security@onexproduction.com | Security |
+| hello@zblockchainsystem.com | General |
+| business@zblockchainsystem.com | Partnerships |
+| support@zblockchainsystem.com | Support |
+| security@zblockchainsystem.com | Security |

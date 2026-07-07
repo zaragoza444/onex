@@ -1,29 +1,29 @@
 {
-  "domain": "onexproduction.com",
+  "domain": "zblockchainsystem.com",
   "company": "OneX Blockchain",
   "displayName": "OneX",
   "addresses": [
     {
       "id": "hello",
-      "email": "hello@onexproduction.com",
+      "email": "hello@zblockchainsystem.com",
       "label": "General inquiries",
       "description": "Questions about OneX, the wallet, or getting started."
     },
     {
       "id": "business",
-      "email": "business@onexproduction.com",
+      "email": "business@zblockchainsystem.com",
       "label": "Business & partnerships",
       "description": "Enterprise integrations, token launches, and institutional onboarding."
     },
     {
       "id": "support",
-      "email": "support@onexproduction.com",
+      "email": "support@zblockchainsystem.com",
       "label": "Technical support",
       "description": "Wallet, node, bridge, and deployment assistance."
     },
     {
       "id": "security",
-      "email": "security@onexproduction.com",
+      "email": "security@zblockchainsystem.com",
       "label": "Security",
       "description": "Responsible disclosure and security reports."
     }
@@ -31,6 +31,6 @@
   "dns": {
     "mxProvider": "Cloudflare Email Routing or Google Workspace",
     "spf": "v=spf1 include:_spf.google.com ~all",
-    "dmarc": "v=DMARC1; p=quarantine; rua=mailto:hello@onexproduction.com"
+    "dmarc": "v=DMARC1; p=quarantine; rua=mailto:hello@zblockchainsystem.com"
   }
 }

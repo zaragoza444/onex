@@ -332,7 +332,7 @@ func summarizeProductionPlatform(raw string) string {
 	}
 	domain := m.Domain
 	if domain == "" {
-		domain = "onexproduction.com"
+		domain = "zblockchainsystem.com"
 	}
 	node := "offline"
 	if m.NodeReady {

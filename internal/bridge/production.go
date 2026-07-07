@@ -32,7 +32,7 @@ func (b *Bridge) ProductionPlatformStatus(ctx context.Context, evmHolder string)
 
 	domain := strings.TrimSpace(os.Getenv("ONEX_PRODUCTION_DOMAIN"))
 	if domain == "" {
-		domain = "onexproduction.com"
+		domain = "zblockchainsystem.com"
 	}
 	publicHost := strings.TrimSpace(os.Getenv("ONEX_PUBLIC_HOST"))
 	publicWallet := "https://" + domain + "/wallet/"

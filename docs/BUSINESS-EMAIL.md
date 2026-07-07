@@ -1,15 +1,15 @@
 # OneX business email
 
-Professional email addresses for **onexproduction.com** (and aliases like **novatrustee.digital**).
+Professional email addresses for **zblockchainsystem.com**.
 
 ## Addresses
 
 | Address | Purpose |
 |---------|---------|
-| `hello@onexproduction.com` | General inquiries |
-| `business@onexproduction.com` | Partnerships & enterprise |
-| `support@onexproduction.com` | Technical support |
-| `security@onexproduction.com` | Security reports |
+| `hello@zblockchainsystem.com` | General inquiries |
+| `business@zblockchainsystem.com` | Partnerships & enterprise |
+| `support@zblockchainsystem.com` | Technical support |
+| `security@zblockchainsystem.com` | Security reports |
 
 Canonical config: `configs/business-email.json`
 
@@ -17,7 +17,7 @@ These appear on the marketing site at `/contact.html` (or `website/contact.html`
 
 ## Option A — Cloudflare Email Routing (free, recommended)
 
-If DNS for `onexproduction.com` is on Cloudflare:
+If DNS for `zblockchainsystem.com` is on Cloudflare:
 
 1. **Email → Email Routing → Enable**
 2. Add destination address (your personal or team inbox)
@@ -26,7 +26,7 @@ If DNS for `onexproduction.com` is on Cloudflare:
 
 ## Option B — Google Workspace
 
-1. Sign up at [Google Workspace](https://workspace.google.com) for `onexproduction.com`
+1. Sign up at [Google Workspace](https://workspace.google.com) for `zblockchainsystem.com`
 2. Verify domain with TXT record
 3. Add MX records Google provides
 4. Create users or aliases for each address above
@@ -38,7 +38,7 @@ MX  @  ASPMX.L.GOOGLE.COM          priority 1
 MX  @  ALT1.ASPMX.L.GOOGLE.COM     priority 5
 MX  @  ALT2.ASPMX.L.GOOGLE.COM     priority 5
 TXT @  v=spf1 include:_spf.google.com ~all
-TXT _dmarc  v=DMARC1; p=quarantine; rua=mailto:hello@onexproduction.com
+TXT _dmarc  v=DMARC1; p=quarantine; rua=mailto:hello@zblockchainsystem.com
 ```
 
 ## Option C — Forward-only (cPanel / registrar)
@@ -49,7 +49,7 @@ Many registrars offer free forwarding:
 - `business@` → your inbox  
 - etc.
 
-Works for receiving; sending *as* `@onexproduction.com` needs SMTP (Workspace or SendGrid).
+Works for receiving; sending *as* `@zblockchainsystem.com` needs SMTP (Workspace or SendGrid).
 
 ## Website contact form
 

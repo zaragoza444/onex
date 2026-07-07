@@ -15,7 +15,7 @@ run-onex.bat
 
 ## OneX Wallet — full DeFi UI
 
-**Website:** [website/](website/) · **Contact:** hello@onexproduction.com · [Business email setup](docs/BUSINESS-EMAIL.md)
+**Website:** [website/](website/) · **Contact:** hello@zblockchainsystem.com · [Business email setup](docs/BUSINESS-EMAIL.md)
 
 Open **http://127.0.0.1:9338/wallet/** for:
 

@@ -1,6 +1,6 @@
 (function () {
   const cfg = window.ONEX_SITE || {};
-  const production = cfg.productionUrl || 'https://onexproduction.com';
+  const production = cfg.productionUrl || 'https://zblockchainsystem.com';
   const walletPath = cfg.walletPath || '/wallet/';
   const walletUrl = cfg.walletUrl || (production.replace(/\/$/, '') + walletPath);
   const consoleUrl = cfg.consoleUrl || cfg.missionControlUrl || (production.replace(/\/$/, '') + '/token-lab/');
@@ -58,7 +58,7 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       const fd = new FormData(form);
-      const to = fd.get('department') || 'hello@onexproduction.com';
+      const to = fd.get('department') || 'hello@zblockchainsystem.com';
       const subject = encodeURIComponent('[OneX] ' + (fd.get('subject') || 'Website inquiry'));
       const body = encodeURIComponent(
         'Name: ' + fd.get('name') + '\nEmail: ' + fd.get('email') + '\n\n' + fd.get('message')
@@ -70,7 +70,7 @@
   function productionStatusCandidates() {
     const host = (location.hostname || '').toLowerCase();
     const urls = [];
-    if (host === 'onexproduction.com' || host === 'www.onexproduction.com' || host === 'novatrustee.digital') {
+    if (host === 'zblockchainsystem.com' || host === 'www.zblockchainsystem.com') {
       urls.push('/bridge/production/status');
     }
     urls.push(production.replace(/\/$/, '') + '/bridge/production/status');
@@ -115,7 +115,7 @@
 
     if (title) {
       if (!j || j.error) title.textContent = 'Production bridge unreachable';
-      else if (live) title.textContent = (j.domain || 'onexproduction.com') + ' · production live';
+      else if (live) title.textContent = (j.domain || 'zblockchainsystem.com') + ' · production live';
       else title.textContent = 'Bridge online · development mode';
     }
 
@@ -125,7 +125,7 @@
     if (j && j.error) {
       setText('hero-badge-text', 'Production bridge unreachable');
     } else if (live) {
-      setText('hero-badge-text', (j.domain || 'onexproduction.com') + ' · production live');
+      setText('hero-badge-text', (j.domain || 'zblockchainsystem.com') + ' · production live');
     } else if (j) {
       setText('hero-badge-text', 'Bridge online · development mode');
     }

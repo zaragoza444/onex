@@ -29,7 +29,7 @@ func (b *Bridge) globalServerURL() string {
 	}
 	domain := strings.TrimSpace(os.Getenv("ONEX_PRODUCTION_DOMAIN"))
 	if domain == "" {
-		domain = "onexproduction.com"
+		domain = "zblockchainsystem.com"
 	}
 	return "https://" + domain
 }

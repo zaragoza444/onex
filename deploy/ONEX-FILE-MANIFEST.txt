@@ -112,13 +112,10 @@ deploy/ONEX-SHARE-ALL.md
 deploy\bsc-launcher.service
 deploy\certs\README.md
 deploy\DEPLOY-dbis-138.md
-deploy\DEPLOY-novatrustee.digital.md
-deploy\DEPLOY-onexproduction.md
-deploy\dns-records-onexproduction.md
+deploy\dns-records.md
 deploy\env.ali-ecosystem.example
 deploy\env.dbis-138.example
-deploy\env.novatrustee.digital.example
-deploy\env.onexproduction.example
+deploy\env.production.example
 deploy\GO-LIVE.md
 deploy\nginx.bsc-launcher.conf
 deploy\nginx.conf
@@ -157,7 +154,6 @@ extension\popup.js
 generate_icon.py
 go.mod
 go.sum
-go-live-onexproduction.bat
 install-wallet-shortcut.ps1
 internal/bridge/bridge7.go
 internal/bridge/bridge7_handlers.go
@@ -339,7 +335,6 @@ run-onex-wallet.bat
 scripts\build-bsc-launcher.ps1
 scripts\compile-flashcoin.ps1
 scripts\connect-bridge.ps1
-scripts\connect-onexproduction.ps1
 scripts\create-repo.ps1
 scripts\deploy.ps1
 scripts\deploy_onex_vps.py
@@ -350,10 +345,6 @@ scripts\deploy-bsc-launcher.ps1
 scripts\deploy-dbis-138.bat
 scripts\deploy-dbis-138.sh
 scripts\deploy-flash-coin-live.ps1
-scripts\deploy-onexproduction.ps1
-scripts\deploy-onexproduction.sh
-scripts\deploy-vps-novatrustee.ps1
-scripts\deploy-vps-novatrustee.sh
 scripts\finish-flash-coin.ps1
 scripts\finish-project.ps1
 scripts\generate_onex_pdf.py

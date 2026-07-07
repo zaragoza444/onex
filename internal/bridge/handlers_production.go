@@ -9,8 +9,6 @@ func (s *Server) registerProductionRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/bridge/production/connect", s.handleProductionConnect)
 	mux.HandleFunc("/bridge/production/bootstrap", s.handleProductionBootstrap)
 	mux.HandleFunc("/bridge/health/green", s.handleGreenHealth)
-	// Legacy alias
-	mux.HandleFunc("/bridge/onexproduction/status", s.handleProductionStatus)
 }
 
 func (s *Server) handleGreenHealth(w http.ResponseWriter, r *http.Request) {

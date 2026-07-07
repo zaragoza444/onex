@@ -21,7 +21,7 @@ if (Test-Path $indexSrc) {
     $html = Get-Content $indexSrc -Raw
     $html = $html -replace "walletPath: '/wallet/'", "walletUrl: 'wallet/',`n      walletPath: 'wallet/'"
     $html = $html -replace 'href="/wallet/"', 'href="wallet/"'
-    $html = $html -replace 'href="/explorer/"', 'href="https://onexproduction.com/explorer/"'
+    $html = $html -replace 'href="/explorer/"', 'href="https://zblockchainsystem.com/explorer/"'
     Set-Content -Path (Join-Path $docs "index.html") -Value $html -NoNewline
 }
 if (Test-Path $contactSrc) {

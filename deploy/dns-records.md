@@ -1,4 +1,4 @@
-# OneX — DNS records for onexproduction.com
+# OneX — DNS records for zblockchainsystem.com
 
 Replace `YOUR_VPS_IP` with your server public IPv4 (e.g. `51.75.64.28`).
 
@@ -24,10 +24,10 @@ Replace `YOUR_VPS_IP` with your server public IPv4 (e.g. `51.75.64.28`).
 
 | Custom address | Action |
 |----------------|--------|
-| `hello@onexproduction.com` | Send to → your inbox |
-| `business@onexproduction.com` | Send to → your inbox |
-| `support@onexproduction.com` | Send to → your inbox |
-| `security@onexproduction.com` | Send to → your inbox |
+| `hello@zblockchainsystem.com` | Send to → your inbox |
+| `business@zblockchainsystem.com` | Send to → your inbox |
+| `support@zblockchainsystem.com` | Send to → your inbox |
+| `security@zblockchainsystem.com` | Send to → your inbox |
 
 Cloudflare adds MX automatically. Do **not** add conflicting MX at your registrar.
 
@@ -36,7 +36,7 @@ Optional (after routing works):
 | Type | Name | Content |
 |------|------|---------|
 | TXT | `@` | `v=spf1 include:_spf.mx.cloudflare.net ~all` |
-| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:hello@onexproduction.com` |
+| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:hello@zblockchainsystem.com` |
 
 ---
 
@@ -50,7 +50,7 @@ Optional (after routing works):
 | MX | `@` | 10 | `ALT3.ASPMX.L.GOOGLE.COM` |
 | MX | `@` | 10 | `ALT4.ASPMX.L.GOOGLE.COM` |
 | TXT | `@` | — | `v=spf1 include:_spf.google.com ~all` |
-| TXT | `_dmarc` | — | `v=DMARC1; p=quarantine; rua=mailto:hello@onexproduction.com` |
+| TXT | `_dmarc` | — | `v=DMARC1; p=quarantine; rua=mailto:hello@zblockchainsystem.com` |
 
 Create users or **Groups → Aliases** for hello, business, support, security in Admin console.
 
@@ -59,12 +59,8 @@ Create users or **Groups → Aliases** for hello, business, support, security in
 ## Verify (PowerShell)
 
 ```powershell
-.\scripts\deploy-onexproduction.ps1 -VpsIp YOUR_VPS_IP
-```
-
-```powershell
-Resolve-DnsName onexproduction.com -Type A
-Resolve-DnsName onexproduction.com -Type MX
+Resolve-DnsName zblockchainsystem.com -Type A
+Resolve-DnsName zblockchainsystem.com -Type MX
 ```
 
 ---
@@ -72,17 +68,17 @@ Resolve-DnsName onexproduction.com -Type MX
 ## Deploy on VPS (after DNS points to VPS)
 
 ```bash
-ssh ubuntu@YOUR_VPS_IP
-git clone https://github.com/zaragoza444/onex.git /opt/onex
-cd /opt/onex
-cp deploy/env.onexproduction.example .env
-nano .env   # set ONEX_API_KEY
+ONEX_DEPLOY_DOMAIN=zblockchainsystem.com CERTBOT_EMAIL=hello@zblockchainsystem.com bash ~/onex/scripts/vps-go-live.sh
+```
 
-CERTBOT_EMAIL=hello@onexproduction.com ./scripts/deploy-onexproduction.sh
+Or from Windows when SSH works:
+
+```powershell
+$env:SSH_PASS='password'; .\scripts\run-vps-go-live.ps1 -VpsIp YOUR_VPS_IP -Domain zblockchainsystem.com
 ```
 
 Then open:
 
-- https://onexproduction.com/ — marketing site  
-- https://onexproduction.com/wallet/ — wallet  
-- https://onexproduction.com/contact.html — business email  
+- https://zblockchainsystem.com/ — marketing site  
+- https://zblockchainsystem.com/wallet/ — wallet  
+- https://zblockchainsystem.com/contact.html — business email  

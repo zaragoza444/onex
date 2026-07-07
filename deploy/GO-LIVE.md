@@ -4,12 +4,12 @@
 
 | Component | Local | Production |
 |-----------|-------|------------|
-| Marketing site | http://127.0.0.1:8080/ | https://onexproduction.com/ |
-| Wallet + DeFi | http://127.0.0.1:9338/wallet/ | https://onexproduction.com/wallet/ |
+| Marketing site | http://127.0.0.1:8080/ | https://zblockchainsystem.com/ |
+| Wallet + DeFi | http://127.0.0.1:9338/wallet/ | https://zblockchainsystem.com/wallet/ |
 | Online Bank + Virtual cards | Wallet → Bank tab | Same |
 | Real Ledger | Wallet → Ledger tab | Same |
 | GitHub Pages | — | https://zaragoza444.github.io/onex/ |
-| Business email | — | hello@ / business@ / support@ @onexproduction.com |
+| Business email | — | hello@ / business@ / support@ @zblockchainsystem.com |
 
 ## Quick local run
 
@@ -31,25 +31,24 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/zaragoza444/onex/main/sc
 With HTTPS domain:
 
 ```bash
-ONEX_DEPLOY_DOMAIN=onexproduction.com CERTBOT_EMAIL=hello@onexproduction.com bash ~/onex/scripts/vps-go-live.sh
+ONEX_DEPLOY_DOMAIN=zblockchainsystem.com CERTBOT_EMAIL=hello@zblockchainsystem.com bash ~/onex/scripts/vps-go-live.sh
 ```
 
 Windows preflight:
 
 ```powershell
-.\scripts\deploy-onexproduction.ps1 -VpsIp 51.75.64.28
-$env:SSH_PASS='password'; .\scripts\run-vps-go-live.ps1
+$env:SSH_PASS='password'; .\scripts\run-vps-go-live.ps1 -VpsIp 51.75.64.28 -Domain zblockchainsystem.com
 ```
 
 ## DNS + email
 
-- **DNS:** `deploy/dns-records-onexproduction.md` — A records `@` and `www` → VPS IP
+- **DNS:** `deploy/dns-records.md` — A records `@` and `www` → VPS IP
 - **Email:** `docs/BUSINESS-EMAIL.md` — Cloudflare Email Routing or Google Workspace
 
 ## GitHub Pages
 
 1. Push `main` to GitHub
-2. Repo variable `ONEX_BRIDGE_PUBLIC_URL` = `http://YOUR_VPS:9338` or `https://onexproduction.com`
+2. Repo variable `ONEX_BRIDGE_PUBLIC_URL` = `http://YOUR_VPS:9338` or `https://zblockchainsystem.com`
 3. Workflow **GitHub Pages** deploys `docs/` (marketing + wallet)
 
 Sync before push:

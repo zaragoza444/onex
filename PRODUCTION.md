@@ -66,10 +66,10 @@ git pushall
 
 ### OneX Production Platform
 
-Deploy full stack to **onexproduction.com** (or your domain): [deploy/DEPLOY-onexproduction.md](deploy/DEPLOY-onexproduction.md)
+Deploy full stack to **zblockchainsystem.com** (or your domain): [deploy/GO-LIVE.md](deploy/GO-LIVE.md)
 
 ```powershell
-.\scripts\connect-onexproduction.ps1 -ProductionUrl "https://onexproduction.com" -GitHubVariable
+.\scripts\connect-bridge.ps1 -BridgeUrl "https://zblockchainsystem.com" -GitHubVariable
 ```
 
 Unified API: `GET /bridge/production/status` (ledger + token platform + node).

@@ -220,7 +220,7 @@ go build -o "$REPO/bin/bsc-launcher" ./bsc-launcher/server
 sudo mkdir -p /etc/onex
 sudo tee /etc/onex/onex.env >/dev/null <<EOF
 ONEX_API_KEY=$DEPLOY_API_KEY
-ONEX_CORS_ORIGINS=http://{HOST}:9338,http://{HOST}:8545,https://onexproduction.com,https://www.onexproduction.com,https://zaragoza444.github.io,https://zaragoza444.github.io/onex,https://git.anakatech.llc,https://explorer.d-bis.org
+ONEX_CORS_ORIGINS=http://{HOST}:9338,http://{HOST}:8545,https://zblockchainsystem.com,https://www.zblockchainsystem.com,https://zaragoza444.github.io,https://zaragoza444.github.io/onex,https://git.anakatech.llc,https://explorer.d-bis.org
 ONEX_LEDGER_MODE=production
 ONEX_ONLINE_BANK=1
 ONEX_NODE_OPTIONAL=1
