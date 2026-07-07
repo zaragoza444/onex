@@ -111,10 +111,8 @@ deploy/BRIDGE7-SHARE.md
 deploy/ONEX-SHARE-ALL.md
 deploy\bsc-launcher.service
 deploy\certs\README.md
-deploy\DEPLOY-dbis-138.md
 deploy\dns-records.md
 deploy\env.ali-ecosystem.example
-deploy\env.dbis-138.example
 deploy\env.production.example
 deploy\GO-LIVE.md
 deploy\nginx.bsc-launcher.conf
@@ -342,8 +340,6 @@ scripts\deploy-ali-ecosystem.bat
 scripts\deploy-ali-ecosystem.py
 scripts\deploy-ali-ecosystem.sh
 scripts\deploy-bsc-launcher.ps1
-scripts\deploy-dbis-138.bat
-scripts\deploy-dbis-138.sh
 scripts\deploy-flash-coin-live.ps1
 scripts\finish-flash-coin.ps1
 scripts\finish-project.ps1

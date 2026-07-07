@@ -64,7 +64,6 @@ Env snippet: **`deploy/bridge7.env.share`**
 |------|-----|
 | `deploy/env.production.example` | VPS / Docker production |
 | `deploy/env.ali-ecosystem.example` | IP-based deploy |
-| `deploy/env.dbis-138.example` | DBIS-138 chain |
 | `.env.example` | Local dev |
 
 ---
@@ -75,7 +74,6 @@ Env snippet: **`deploy/bridge7.env.share`**
 |------|-----|
 | `deploy/GO-LIVE.md` | Go-live checklist |
 | `deploy/dns-records.md` | zblockchainsystem.com DNS |
-| `deploy/DEPLOY-dbis-138.md` | DBIS-138 |
 | `scripts/vps-go-live.sh` | One-shot VPS setup |
 | `scripts/run-vps-go-live.ps1` | VPS go-live from Windows |
 

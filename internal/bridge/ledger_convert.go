@@ -14,7 +14,7 @@ func (b *Bridge) defaultBridgeChain() string {
 	if v := strings.TrimSpace(os.Getenv("ONEX_DEFAULT_BRIDGE_CHAIN")); v != "" {
 		return v
 	}
-	return "dbis-138"
+	return "bsc"
 }
 
 func (b *Bridge) ConvertLedger(ctx context.Context, evmHolder string, req ledger.ConvertRequest) (*ledger.ConvertResult, error) {
@@ -120,7 +120,7 @@ func resolveConvertTokenDeploy(req ledger.ConvertRequest) ledger.ConvertTokenDep
 		td.ChainID = strings.TrimSpace(req.ReceiverChain)
 	}
 	if td.ChainID == "" {
-		td.ChainID = "dbis-138"
+		td.ChainID = "bsc"
 	}
 	if td.Symbol == "" {
 		td.Symbol = strings.ToUpper(strings.TrimSpace(req.ToAsset))

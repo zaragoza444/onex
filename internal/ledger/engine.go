@@ -60,7 +60,6 @@ func (c Config) Status() map[string]interface{} {
 	if dc == "" {
 		dc = "bsc"
 	}
-	dbisRPC := strings.TrimSpace(legacy.EnvOrLegacy("DBIS138_RPC_URL", "DBIS138_RPC_URL"))
 	return map[string]interface{}{
 		"service":      "onex-ledger-middleware",
 		"mode":         c.Mode,
@@ -81,8 +80,6 @@ func (c Config) Status() map[string]interface{} {
 		"settlement": SettlementCapabilities(c, bank, false, false),
 		"importActive":       true,
 		"defaultBridgeChain": dc,
-		"dbis138Rpc":         dbisRPC != "",
-		"dbis138Configured":  dbisRPC != "",
 	}
 }
 

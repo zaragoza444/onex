@@ -92,7 +92,6 @@ func SupportedChains() []SupportedChain {
 		{ID: "bitcoin", Name: "Bitcoin", Symbol: "BTC", Type: "btc", Example: "bitcoin:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"},
 		{ID: "tron", Name: "TRON", Symbol: "TRX", Type: "tron", Example: "tron:TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"},
 		{ID: "alltra", Name: "ALLTRA", Symbol: "ALL", Type: "evm", Example: "alltra:0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"},
-		{ID: "dbis-138", Name: "IDBIS / DBIS Chain 138", Symbol: "ETH", Type: "evm", Example: "dbis-138:0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0"},
 	}
 }
 
@@ -129,7 +128,6 @@ var chainAliases = map[string]string{
 	"avax": "avalanche", "avalanche": "avalanche", "base": "base",
 	"sol": "solana", "solana": "solana", "btc": "bitcoin", "bitcoin": "bitcoin",
 	"trx": "tron", "tron": "tron", "all": "alltra", "alltra": "alltra",
-	"dbis": "dbis-138", "idbis": "dbis-138", "138": "dbis-138", "smom": "dbis-138",
 	"chain": "", "evm": "ethereum", "crypto": "ethereum",
 }
 

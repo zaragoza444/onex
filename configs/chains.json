@@ -11,6 +11,5 @@
   {"id": "solana", "name": "Solana", "networkId": 0, "symbol": "SOL", "native": false, "rpc": "https://api.mainnet-beta.solana.com", "explorer": "https://solscan.io", "color": "#14f195", "type": "solana"},
   {"id": "bitcoin", "name": "Bitcoin", "networkId": 0, "symbol": "BTC", "native": false, "rpc": "", "explorer": "https://mempool.space", "color": "#f7931a", "type": "btc"},
   {"id": "tron", "name": "TRON", "networkId": 0, "symbol": "TRX", "native": false, "rpc": "https://api.trongrid.io", "explorer": "https://tronscan.org", "color": "#ff0013", "type": "tron"},
-  {"id": "alltra", "name": "ALLTRA", "networkId": 651940, "symbol": "ALL", "native": false, "rpc": "", "explorer": "", "color": "#c0a062", "type": "evm"},
-  {"id": "dbis-138", "name": "IDBIS / DBIS Chain 138", "networkId": 138, "symbol": "ETH", "native": false, "rpc": "https://rpc-core.d-bis.org", "explorer": "https://explorer.d-bis.org", "color": "#4a9eff", "type": "evm"}
+  {"id": "alltra", "name": "ALLTRA", "networkId": 651940, "symbol": "ALL", "native": false, "rpc": "", "explorer": "", "color": "#c0a062", "type": "evm"}
 ]

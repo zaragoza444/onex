@@ -8,13 +8,6 @@
       "address": "0x28397643D5A8E9C752Fd72362eBbBfA3e4F8C195"
     },
     {
-      "id": "wallet-dbis-138",
-      "kind": "wallet",
-      "label": "DBIS 138 Settlement",
-      "chainId": "dbis-138",
-      "address": "0x28397643D5A8E9C752Fd72362eBbBfA3e4F8C195"
-    },
-    {
       "id": "wallet-eth-treasury",
       "kind": "wallet",
       "label": "Ethereum Treasury",

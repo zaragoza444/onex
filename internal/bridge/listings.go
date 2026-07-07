@@ -122,8 +122,6 @@ func explorerLabel(chainID string) string {
 		return "Snowtrace"
 	case "base":
 		return "Basescan"
-	case "dbis-138", "dbis", "138":
-		return "DBIS Explorer"
 	default:
 		return "Block Explorer"
 	}
@@ -267,8 +265,6 @@ func pairMatchesChain(pairChain, dexChain string) bool {
 		return pairChain == "1" || pairChain == "ethereum" || pairChain == "eth"
 	case "polygon":
 		return pairChain == "137" || pairChain == "polygon"
-	case "dbis-138", "138":
-		return pairChain == "138" || pairChain == "dbis"
 	}
 	return false
 }

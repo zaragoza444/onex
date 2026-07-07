@@ -1082,14 +1082,14 @@ function renderListingResult(j) {
 }
 
 function explorerLabelForChain(chainId) {
-  const m = { bsc: 'BSCScan', ethereum: 'Etherscan', 'dbis-138': 'DBIS Explorer', polygon: 'Polygonscan' };
+  const m = { bsc: 'BSCScan', ethereum: 'Etherscan', polygon: 'Polygonscan' };
   return m[chainId] || 'Explorer';
 }
 
 async function renderPlatformMarkets() {
   document.querySelectorAll('#listing-chain').forEach(sel => {
     if (sel.options.length) return;
-    sel.innerHTML = chains.filter(c => c.type === 'evm' || c.id === 'dbis-138')
+    sel.innerHTML = chains.filter(c => c.type === 'evm')
       .map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   });
   const listEl = document.getElementById('platform-market-list');
@@ -1567,8 +1567,8 @@ const LEDGER_CONVERT_ASSETS = ['USD', 'EUR', 'GBP', 'BTC', 'ETH', 'USDT', 'USDC'
 let ledgerConvTimer = null;
 let ledgerAccounts = [];
 let ledgerDestinations = { chains: [], banks: [] };
-let ledgerXferMode = 'dbis';
-let ledgerDefaultBridgeChain = 'dbis-138';
+let ledgerXferMode = 'bsc';
+let ledgerDefaultBridgeChain = 'bsc';
 let ledgerXferTimer = null;
 let settlementKind = 'real_crypto';
 let settlementTimer = null;
@@ -1790,7 +1790,7 @@ function fillLedgerConvChainSelects() {
   const chains = (typeof chainsList !== 'undefined' && chainsList?.length)
     ? chainsList
     : (window.ONEX_FALLBACK?.chains || []);
-  const evmChains = chains.filter(c => c.type === 'evm' || c.id === 'dbis-138');
+  const evmChains = chains.filter(c => c.type === 'evm');
   const opts = evmChains.map(c => `<option value="${c.id}">${c.name || c.id}</option>`).join('');
   for (const id of ['ledger-conv-receiver-chain', 'ledger-conv-token-chain']) {
     const el = document.getElementById(id);
@@ -1802,7 +1802,6 @@ function fillLedgerConvChainSelects() {
 
 const CHAIN_NATIVE_ASSET = {
   'onex-mainnet-1': 'ONEX', ethereum: 'ETH', bsc: 'BNB', polygon: 'MATIC',
-  'dbis-138': 'ETH', dbis: 'ETH', idbis: 'ETH',
   arbitrum: 'ETH', optimism: 'ETH', avalanche: 'AVAX', base: 'ETH',
   solana: 'SOL', bitcoin: 'BTC', tron: 'TRX', alltra: 'ALL',
 };
@@ -2063,9 +2062,9 @@ async function loadLedgerAccounts() {
     chainSel.innerHTML = ledgerDestinations.chains.map(c =>
       `<option value="${c.id}" data-symbol="${c.symbol}">${c.name} (${c.symbol})</option>`
     ).join('');
-    const def = ledgerDefaultBridgeChain || 'dbis-138';
+    const def = ledgerDefaultBridgeChain || 'bsc';
     const pick = [...chainSel.options].find(o => o.value === def) ||
-      [...chainSel.options].find(o => o.value === 'dbis-138');
+      [...chainSel.options].find(o => o.value === 'bsc');
     if (pick) chainSel.value = pick.value;
     onLedgerXferChainChange();
   }
@@ -2084,19 +2083,11 @@ async function loadLedgerAccounts() {
 
 function applyLedgerBridgeDefaults(st) {
   if (st?.defaultBridgeChain) ledgerDefaultBridgeChain = st.defaultBridgeChain;
-  const mode = ledgerDefaultBridgeChain === 'dbis-138' ? 'dbis' : 'bsc';
-  setLedgerXferMode(mode);
+  setLedgerXferMode('bsc');
 }
 
 function setLedgerXferMode(mode) {
-  if (mode === 'dbis') {
-    ledgerXferMode = 'chain';
-    const chainSel = document.getElementById('ledger-xfer-chain');
-    const conv = document.getElementById('ledger-xfer-convert');
-    if (chainSel) chainSel.value = 'dbis-138';
-    if (conv && !conv.value) conv.value = 'ETH';
-    fillLedgerXferMyAddress();
-  } else if (mode === 'bsc') {
+  if (mode === 'bsc') {
     ledgerXferMode = 'chain';
     const chainSel = document.getElementById('ledger-xfer-chain');
     const conv = document.getElementById('ledger-xfer-convert');
@@ -2109,14 +2100,13 @@ function setLedgerXferMode(mode) {
   document.querySelectorAll('#ledger-bridge-tabs .ledger-xfer-tab').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === mode);
   });
-  const isChain = mode === 'chain' || mode === 'bsc' || mode === 'dbis';
+  const isChain = mode === 'chain' || mode === 'bsc';
   document.getElementById('ledger-xfer-panel-chain')?.classList.toggle('hidden', !isChain);
   document.getElementById('ledger-xfer-panel-bank')?.classList.toggle('hidden', mode !== 'bank');
   document.getElementById('ledger-xfer-panel-internal')?.classList.toggle('hidden', mode !== 'internal');
   const btn = document.getElementById('ledger-xfer-btn');
   if (btn) {
-    btn.textContent = mode === 'dbis' ? 'Bridge to DBIS 138' :
-      mode === 'bsc' ? 'Bridge to BSC' :
+    btn.textContent = mode === 'bsc' ? 'Bridge to BSC' :
       mode === 'internal' ? 'Transfer internally' :
       mode === 'bank' ? 'Send to external bank' : 'Send to external chain';
   }
@@ -2282,7 +2272,7 @@ function refreshSettlementUI(accounts, dest, caps, settlements) {
   const chains = dest?.chains || ledgerDestinations.chains || [];
   if (chainSel && chains.length) {
     chainSel.innerHTML = chains.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-    chainSel.value = ledgerDefaultBridgeChain || 'dbis-138';
+    chainSel.value = ledgerDefaultBridgeChain || 'bsc';
   }
   const bankSel = document.getElementById('ledger-settle-bank');
   const banks = dest?.banks || ledgerDestinations.banks || [];

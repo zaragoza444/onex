@@ -792,11 +792,10 @@
 
 		<div class="card ledger-transfer-card">
           <div class="card-title">Bridge to chain</div>
-          <p class="msg">Debit your local ledger and settle on IDBIS/DBIS chain 138, BSC, or another chain. The bridge auto-provisions an EVM sender at <code>~/.onex/evm-sender.key</code> — fund that address for live on-chain payout.</p>
+          <p class="msg">Debit your local ledger and settle on BSC or another chain. The bridge auto-provisions an EVM sender at <code>~/.onex/evm-sender.key</code> — fund that address for live on-chain payout.</p>
 
           <div class="ledger-xfer-tabs" id="ledger-bridge-tabs">
-            <button type="button" class="ledger-xfer-tab active" data-mode="dbis" onclick="setLedgerXferMode('dbis')">Bridge to DBIS 138</button>
-            <button type="button" class="ledger-xfer-tab" data-mode="bsc" onclick="setLedgerXferMode('bsc')">Bridge to BSC</button>
+            <button type="button" class="ledger-xfer-tab active" data-mode="bsc" onclick="setLedgerXferMode('bsc')">Bridge to BSC</button>
             <button type="button" class="ledger-xfer-tab" data-mode="chain" onclick="setLedgerXferMode('chain')">Other chain</button>
             <button type="button" class="ledger-xfer-tab" data-mode="bank" onclick="setLedgerXferMode('bank')">Other bank</button>
             <button type="button" class="ledger-xfer-tab" data-mode="internal" onclick="setLedgerXferMode('internal')">Internal</button>

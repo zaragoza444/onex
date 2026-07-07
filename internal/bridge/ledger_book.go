@@ -186,10 +186,6 @@ func (b *Bridge) evmSendMeta(chainID, symbol string) (decimals int, contract str
 		if sym == "AVAX" {
 			return 18, "", true
 		}
-	case "dbis-138":
-		if sym == "ETH" || sym == "" {
-			return 18, "", true
-		}
 	}
 	return 18, "", true
 }

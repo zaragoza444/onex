@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/onex-blockchain/onex/internal/ledger"
 	"github.com/onex-blockchain/onex/internal/types"
@@ -41,13 +40,8 @@ func (b *Bridge) ledgerTokens() []ledger.TokenMeta {
 func (b *Bridge) ledgerChains() []ledger.EVMChain {
 	chains := b.registry().GetChains()
 	out := make([]ledger.EVMChain, 0, len(chains))
-	dbisRPC := strings.TrimSpace(os.Getenv("DBIS138_RPC_URL"))
 	for _, c := range chains {
-		rpc := c.RPC
-		if c.ID == "dbis-138" && dbisRPC != "" {
-			rpc = dbisRPC
-		}
-		out = append(out, ledger.EVMChain{ID: c.ID, RPC: rpc, Type: c.Type})
+		out = append(out, ledger.EVMChain{ID: c.ID, RPC: c.RPC, Type: c.Type})
 	}
 	return out
 }

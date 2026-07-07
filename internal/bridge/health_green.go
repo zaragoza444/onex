@@ -65,15 +65,11 @@ func (b *Bridge) GreenHealth(ctx context.Context, evmHolder string) map[string]i
 		importOK = v
 	}
 
-	dbisOK := false
-	if dbisRPC := strings.TrimSpace(os.Getenv("DBIS138_RPC_URL")); dbisRPC != "" {
-		dbisOK = true
-	} else {
-		for _, c := range b.registry().GetChains() {
-			if c.RPC != "" && (c.ID == "dbis-138" || c.Type == "evm") {
-				dbisOK = true
-				break
-			}
+	evmChainsOK := false
+	for _, c := range b.registry().GetChains() {
+		if c.RPC != "" && c.Type == "evm" {
+			evmChainsOK = true
+			break
 		}
 	}
 
@@ -215,7 +211,7 @@ func (b *Bridge) GreenHealth(ctx context.Context, evmHolder string) map[string]i
 		{"id": "import", "label": "Active import", "status": checkStatus(importOK), "ok": importOK, "detail": "real valuation import"},
 		{"id": "settlement", "label": "Settlement", "status": settleStatus, "ok": settleReady, "detail": settleDetail},
 		{"id": "ethereum", "label": "Ethereum mainnet", "status": checkStatusSoft(eth.Configured && eth.Online), "ok": eth.Configured && eth.Online, "detail": ethDetail},
-		{"id": "dbis138", "label": "DBIS chain 138", "status": checkStatus(dbisOK), "ok": dbisOK, "detail": "EVM chains configured"},
+		{"id": "evm-chains", "label": "EVM chains", "status": checkStatus(evmChainsOK), "ok": evmChainsOK, "detail": "EVM chains configured"},
 		{"id": "node", "label": "OneX node", "status": checkStatusSoft(nodeCheckOK), "ok": nodeCheckOK, "detail": map[bool]string{true: "online", false: "optional offline"}[nodeOK]},
 		{"id": "evm", "label": "EVM settlement", "status": evmStatus, "ok": evmOK, "detail": evmDetail},
 		{"id": "value", "label": "Real valuation", "status": checkStatusSoft(ledgerHasValue), "ok": ledgerHasValue, "detail": "ledger + bank valued"},
